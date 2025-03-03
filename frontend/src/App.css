@@ -347,6 +347,7 @@ body {
 }
 
 .auth-form input[type="text"],
+.auth-form input[type="username"],
 .auth-form input[type="email"],
 .auth-form input[type="password"] {
   width: 100%;
@@ -1108,4 +1109,9 @@ body {
 
 .special-link:hover::after {
   width: 100%;
+}
+.page-not-found-msg{
+  text-align: center;
+  color: rgb(164, 7, 7);
+  font-size: 50px;
 }

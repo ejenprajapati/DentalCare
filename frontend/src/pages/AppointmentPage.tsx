@@ -1,6 +1,6 @@
 // pages/AppointmentPage.tsx
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-
+import appointment_img from '../assets/appointment-page.png';
 interface FormData {
   name: string;
   phone: string;
@@ -41,7 +41,7 @@ const AppointmentPage: React.FC = () => {
       <div className="container">
         <div className="appointment-hero">
           <div className="appointment-image">
-            <img src="/images/patient-smiling.jpg" alt="Happy dental patient" />
+            <img src={appointment_img} alt="Happy dental patient" />
           </div>
           
           <div className="appointment-form-container">

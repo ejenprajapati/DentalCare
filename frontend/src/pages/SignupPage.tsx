@@ -1,16 +1,24 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import logoTooth from '../assets/tooth-logo.png';
+import api from "../api"
+
+
+
 
 function SignupPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    username: '',
     password: '',
     confirmPassword: '',
     agreeTerms: false
   });
+  // const unusedVars = { route, method };
 
+  const [loading, setLoading]= useState(false);
+  const navigate= useNavigate()
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setFormData({
@@ -19,23 +27,25 @@ function SignupPage() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
+    setLoading(true);
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords don't match!");
       return;
     }
+    try{
+      const res= await api.post("/api/user/register/", {username: formData.username,email: formData.email, password: formData.password})
+      navigate("/login")
+    }catch(error){
+      alert(error)
+
+    }finally{
+      setLoading(false)
+
+    }
     
-    // Here you would typically make an API call to your Django backend
-    console.log('Signup data:', formData);
-    // Example API call:
-    // axios.post('/api/register/', formData)
-    //   .then(response => {
-    //     // Handle successful registration
-    //   })
-    //   .catch(error => {
-    //     // Handle errors
-    //   });
+    
   };
 
   return (
@@ -57,8 +67,21 @@ function SignupPage() {
               <input
                 type="text"
                 name="name"
-                placeholder="Type your name"
+                placeholder="Type your full name"
                 value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <div className="input-icon">
+                <i className="fas fa-user"></i>
+              </div>
+              <input
+                type="text"
+                name="username"
+                placeholder="Username"
+                value={formData.username}
                 onChange={handleChange}
                 required
               />

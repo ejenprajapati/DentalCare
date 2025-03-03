@@ -1,6 +1,7 @@
 // pages/BlogsPage.js
 import React, { useState } from 'react';
 // import { Link } from 'react-router-dom';
+import logo from '../assets/tooth-logo.png';
 
 type BlogPost = {
     id: number;
@@ -139,7 +140,8 @@ function BlogsPage() {
             {sortedBlogs.slice(0, 4).map(post => (
               <div key={post.id} className="blog-card">
                 <div className="blog-image">
-                  <img src={post.image} alt={post.title} />
+                  {/* <img src={post.image} alt={post.title} /> */}
+                  <img src={logo} alt={post.title} />
                 </div>
                 <div className="blog-category">
                   <span>{post.category}</span>

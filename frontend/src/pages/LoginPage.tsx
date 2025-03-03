@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import logoTooth from '../assets/tooth-logo.png';
+import api from "../api"
+import { ACCESS_TOKEN, REFRESH_TOKEN } from '../constants';
+
+interface LoginPageProps {
+  route: string;  // Optional route string parameter
+
+}
 
 function LoginPage() {
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: '',
     rememberMe: false
   });
+
+  const [loading, setLoading]= useState(false);
+  const navigate= useNavigate()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -17,18 +27,24 @@ function LoginPage() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
+    setLoading(true);
     e.preventDefault();
-    // Here you would typically make an API call to your Django backend
-    console.log('Login data:', formData);
-    // Example API call:
-    // axios.post('/api/login/', formData)
-    //   .then(response => {
-    //     // Handle successful login
-    //   })
-    //   .catch(error => {
-    //     // Handle errors
-    //   });
+    
+    try{
+      const res= await api.post("/api/token/", {username: formData.username ,password: formData.password})
+      localStorage.setItem(ACCESS_TOKEN, res.data.access)
+      localStorage.setItem(REFRESH_TOKEN, res.data.refresh)
+      navigate("/")
+    }catch(error){
+      alert(error)
+
+    }finally{
+      setLoading(false)
+
+    }
+    
+    
   };
 
   return (
@@ -48,10 +64,10 @@ function LoginPage() {
                 <i className="fas fa-envelope"></i>
               </div>
               <input
-                type="email"
-                name="email"
-                placeholder="Enter your Email"
-                value={formData.email}
+                type="username"
+                name="username"
+                placeholder="Username"
+                value={formData.username}
                 onChange={handleChange}
                 required
               />

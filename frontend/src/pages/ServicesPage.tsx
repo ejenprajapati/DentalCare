@@ -1,6 +1,7 @@
 // pages/ServicesPage.js
 
 import { Link } from 'react-router-dom';
+import logo from '../assets/logo.png';
 
 function ServicesPage() {
   const services = [
@@ -93,7 +94,7 @@ function ServicesPage() {
             {services.map(service => (
               <div key={service.id} className="service-card">
                 <div className="service-icon">
-                  <img src={service.icon} alt={service.title} />
+                  <img src={logo} alt={service.title} />
                 </div>
                 <h3>{service.title}</h3>
                 <p>{service.description}</p>

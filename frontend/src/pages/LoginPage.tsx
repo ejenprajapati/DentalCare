@@ -4,10 +4,7 @@ import logoTooth from '../assets/tooth-logo.png';
 import api from "../api"
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '../constants';
 
-interface LoginPageProps {
-  route: string;  // Optional route string parameter
 
-}
 
 function LoginPage() {
   const [formData, setFormData] = useState({

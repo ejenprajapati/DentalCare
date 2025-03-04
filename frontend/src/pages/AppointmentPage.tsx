@@ -105,9 +105,9 @@ const AppointmentPage: React.FC = () => {
                     required
                   >
                     <option value="">Select Doctor</option>
-                    <option value="Dr. John">Dr. John</option>
-                    <option value="Dr. Smith">Dr. Smith</option>
-                    <option value="Dr. Clark">Dr. Clark</option>
+                    <option value="Dr. Ram">Dr. Ram</option>
+                    <option value="Dr. Shyam">Dr. Shyam</option>
+                    <option value="Dr. Sita">Dr. Sita</option>
                   </select>
                 </div>
                 

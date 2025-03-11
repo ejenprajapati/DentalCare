@@ -1,0 +1,112 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+const AICheckup: React.FC = () => {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const navigate = useNavigate();
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      setSelectedFile(file);
+      
+      // Create a preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUpload = () => {
+    // Trigger file input click
+    document.getElementById('file-upload')?.click();
+  };
+
+  const handleAnalyze = async () => {
+    if (!selectedFile) {
+      alert('Please upload an image first');
+      return;
+    }
+
+    setIsLoading(true);
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append('image', selectedFile);
+
+    try {
+      // Fixed URL - removed trailing slash to match backend URL pattern
+      const response = await axios.post('http://localhost:8000/api/analyze-image/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      // Store the results in sessionStorage
+      sessionStorage.setItem('analysisResults', JSON.stringify(response.data));
+      
+      // Navigate to results page
+      navigate('/results');
+    } catch (error) {
+      console.error('Error analyzing image:', error);
+      alert('An error occurred while analyzing the image. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="container">
+      <div className="logo-container">
+        <div className="left-logo">
+          <img src="/logo.png" alt="Dental Care Logo" className="logo" />
+          <h2>DENTAL CARE</h2>
+        </div>
+      </div>
+      
+      <h1 className="page-title">AI Checkup</h1>
+      
+      <div className="upload-container">
+        <div className="image-preview">
+          {imagePreview ? (
+            <img src={imagePreview} alt="Preview" />
+          ) : (
+            <div className="upload-placeholder">
+              <img src="/upload-icon.png" alt="Upload" />
+              <h3>CHOOSE IMAGE</h3>
+            </div>
+          )}
+        </div>
+        
+        <p className="image-type">X-ray Image</p>
+        
+        <div className="button-group">
+          <input
+            type="file"
+            id="file-upload"
+            accept="image/*"
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
+          />
+          <button className="btn upload-btn" onClick={handleUpload}>
+            Upload
+          </button>
+          <button 
+            className="btn analyze-btn" 
+            onClick={handleAnalyze}
+            disabled={!selectedFile || isLoading}
+          >
+            {isLoading ? 'Analyzing...' : 'Analyze'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AICheckup;

@@ -9,6 +9,8 @@ import ServicesPage from './pages/ServicesPage';
 import BlogsPage from './pages/BlogsPage';
 import AppointmentPage from './pages/AppointmentPage';
 import NotFound from "./pages/NotFound"
+import AICheckup from './pages/AICheckup';
+import Results  from './pages/Results';
 import ProtectedRoute from "./components/ProtectedRoute"
 // import AboutPage from './pages/AboutPage';
 // import ContactPage from './pages/ContactPage';
@@ -43,6 +45,8 @@ function App() {
               <Route path="/logout" element={<Logout />} />
               <Route path="/signup" element={<RegisterAndLogout />} />
               <Route path="/services" element={<ServicesPage />} />
+              <Route path="/ai-checkup" element={<ProtectedRoute><AICheckup /></ProtectedRoute>} />
+              <Route path="/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
               <Route path="/blogs" element={<BlogsPage />} />
               <Route path="/appointment" element={
                   <ProtectedRoute>

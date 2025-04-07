@@ -19,6 +19,11 @@ interface QualificationOption {
   label: string;
 }
 
+interface GenderOption {
+  value: string;
+  label: string;
+}
+
 function SignupPage() {
   // Options for dropdown menus
   const specializations: SpecializationOption[] = [
@@ -46,6 +51,13 @@ function SignupPage() {
     { value: 'PhD', label: 'PhD in Dental Sciences' }
   ];
 
+  const genders: GenderOption[] = [
+    { value: 'male', label: 'Male' },
+    { value: 'female', label: 'Female' },
+    { value: 'other', label: 'Other' },
+    { value: 'prefer_not_to_say', label: 'Prefer not to say' }
+  ];
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -55,6 +67,7 @@ function SignupPage() {
     confirmPassword: '',
     phoneNumber: '',
     role: 'patient', // Default role
+    gender: '', // Added gender field
     // Dentist specific fields
     specialization: '',
     experience: '',
@@ -107,6 +120,11 @@ function SignupPage() {
       return;
     }
 
+    if (!formData.gender) {
+      alert("Please select your gender!");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -116,7 +134,8 @@ function SignupPage() {
         password: formData.password,
         first_name: formData.firstName,
         last_name: formData.lastName,
-        phone_number: formData.phoneNumber
+        phone_number: formData.phoneNumber,
+        gender: formData.gender
       };
 
       // Add role-specific fields
@@ -229,6 +248,25 @@ function SignupPage() {
                 onChange={handleChange}
                 required
               />
+            </div>
+
+            {/* Gender Selection */}
+            <div className="form-group">
+              <label htmlFor="gender">Gender:</label>
+              <select
+                name="gender"
+                id="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select Gender</option>
+                {genders.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
             
             <div className="form-group">
@@ -394,4 +432,4 @@ function SignupPage() {
   );
 }
 
-export default SignupPage;  
+export default SignupPage;

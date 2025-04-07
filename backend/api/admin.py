@@ -22,11 +22,11 @@ class PatientInline(admin.StackedInline):
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_staff')
+    list_display = ('username', 'email', 'first_name', 'last_name', 'gender','role', 'is_staff')
     list_filter = ('role', 'is_staff', 'is_superuser')
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        (_('Personal info'), {'fields': ('first_name', 'last_name', 'email', 'phone_number')}),
+        (_('Personal info'), {'fields': ('first_name', 'last_name', 'email', 'phone_number','gender')}),
         (_('Role'), {'fields': ('role',)}),
         (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
@@ -47,6 +47,24 @@ class UserAdmin(BaseUserAdmin):
             elif obj.role == 'patient':
                 return [PatientInline]
         return []
+    def delete_queryset(self, request, queryset):
+        """
+        Override bulk deletion in the admin interface.
+        This ensures the custom User.delete() method is called for each user.
+        """
+        for user in queryset:
+            user.delete()  # Calls your custom delete() method
+
+    def delete_model(self, request, obj):
+        """
+        Override single object deletion in the admin interface.
+        This ensures the custom User.delete() method is called.
+        """
+        obj.delete()  # Calls your custom delete() method
+    def get_deleted_objects(self, objs, request):
+        """Customize the deletion confirmation page if needed."""
+        from django.contrib.admin.utils import get_deleted_objects
+        return get_deleted_objects(objs, request, self.admin_site)
 
 @admin.register(Dentist)
 class DentistAdmin(admin.ModelAdmin):

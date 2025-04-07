@@ -32,7 +32,7 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password', 'phone_number', 'role']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password', 'phone_number', 'role', 'gender']
         extra_kwargs = {
             'password': {'write_only': True},
         }
@@ -63,16 +63,18 @@ class PatientSerializer(serializers.ModelSerializer):
         fields = ['user', 'emergency_contact', 'allergies', 'member_since']
 
 class RegisterDentistSerializer(serializers.ModelSerializer):
+    gender = serializers.CharField(required=True)
     email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True)
     specialization = serializers.CharField(required=False)
     experience = serializers.CharField(required=False)
     qualification = serializers.CharField(required=False)
+
     
     class Meta:
         model = User
         fields = ['username', 'email', 'password', 'first_name', 'last_name', 
-                 'phone_number', 'specialization', 'experience', 'qualification']
+                 'phone_number', 'specialization', 'experience', 'qualification', 'gender']
     
     def validate_email(self, value):
         if not value.endswith('@dentalcare.com'):
@@ -83,6 +85,7 @@ class RegisterDentistSerializer(serializers.ModelSerializer):
         specialization = validated_data.pop('specialization', None)
         experience = validated_data.pop('experience', None)
         qualification = validated_data.pop('qualification', None)
+        gender = validated_data.pop('gender', None)
         
         user = User.objects.create_user(
             username=validated_data['username'],
@@ -91,7 +94,8 @@ class RegisterDentistSerializer(serializers.ModelSerializer):
             first_name=validated_data.get('first_name', ''),
             last_name=validated_data.get('last_name', ''),
             phone_number=validated_data.get('phone_number', ''),
-            role='dentist'
+            role='dentist',
+            gender=gender
         )
         
         dentist = user.dentist
@@ -110,11 +114,12 @@ class RegisterPatientSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     emergency_contact = serializers.CharField(required=False)
     allergies = serializers.CharField(required=False)
+    gender = serializers.CharField(required=True)
     
     class Meta:
         model = User
         fields = ['username', 'email', 'password', 'first_name', 'last_name', 
-                 'phone_number', 'emergency_contact', 'allergies']
+                 'phone_number', 'emergency_contact', 'allergies', 'gender']
     
     def validate_email(self, value):
         if value.endswith('@dentalcare.com'):
@@ -124,6 +129,7 @@ class RegisterPatientSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         emergency_contact = validated_data.pop('emergency_contact', None)
         allergies = validated_data.pop('allergies', None)
+        gender = validated_data.pop('gender', None)
         
         user = User.objects.create_user(
             username=validated_data['username'],
@@ -132,7 +138,8 @@ class RegisterPatientSerializer(serializers.ModelSerializer):
             first_name=validated_data.get('first_name', ''),
             last_name=validated_data.get('last_name', ''),
             phone_number=validated_data.get('phone_number', ''),
-            role='patient'
+            role='patient',
+            gender=gender
         )
         
         patient = user.patient

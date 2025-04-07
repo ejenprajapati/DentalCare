@@ -157,48 +157,6 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    
-    # def create(self, request, *args, **kwargs):
-    #     user = self.request.user
-    #     print(f"Creating appointment: User: {user}, Authenticated: {user.is_authenticated}, Role: {getattr(user, 'role', 'unknown')}")
-    #     print(f"Request data: {request.data}")
-        
-    #     serializer = self.get_serializer(data=request.data)
-        
-    #     if not serializer.is_valid():
-    #         print(f"Validation errors: {serializer.errors}")
-    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
-    #     # Set patient or dentist based on user role if not provided
-    #     if user.role == 'patient':
-    #         if not hasattr(user, 'patient'):
-    #             return Response(
-    #                 {"error": "User does not have associated patient profile"},
-    #                 status=status.HTTP_400_BAD_REQUEST
-    #             )
-    #         serializer.validated_data['patient'] = user.patient
-    #     elif user.role == 'dentist':
-    #         if not hasattr(user, 'dentist'):
-    #             return Response(
-    #                 {"error": "User does not have associated dentist profile"},
-    #                 status=status.HTTP_400_BAD_REQUEST
-    #             )
-    #         # If a dentist is creating appointment for a patient, patient must be provided
-    #         if 'patient' not in serializer.validated_data:
-    #             return Response(
-    #                 {"patient": ["Patient ID is required when dentist creates appointment"]},
-    #                 status=status.HTTP_400_BAD_REQUEST
-    #             )
-    #         serializer.validated_data['dentist'] = user.dentist
-    #     else:
-    #         return Response(
-    #             {"error": ["Only patients and dentists can create appointments"]},
-    #             status=status.HTTP_403_FORBIDDEN
-    #         )
-            
-    #     self.perform_create(serializer)
-    #     headers = self.get_success_headers(serializer.data)
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         
     def perform_create(self, serializer):
         serializer.save()

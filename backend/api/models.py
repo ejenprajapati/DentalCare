@@ -3,6 +3,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils import timezone
 from django.contrib.auth.models import Group, Permission
+from django.db import transaction
+
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
@@ -30,26 +32,33 @@ class CustomUserManager(BaseUserManager):
         
         return self.create_user(username, email, password, **extra_fields)
 
+
 class User(AbstractUser):
     ROLE_CHOICES = (
         ('patient', 'Patient'),
         ('dentist', 'Dentist'),
     )
+    GENDER_CHOICES = (
+        ('male', 'Male'),
+        ('female', 'Female'),
+        ('other', 'Other'),
+    )
     
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='patient')
+    gender = models.CharField(max_length=20, choices=GENDER_CHOICES, blank=True, null=True)
     
     # Fix the related_name conflicts
     groups = models.ManyToManyField(
-        'auth.Group',
+        Group,
         related_name='custom_user_groups',
         blank=True,
         verbose_name='groups',
         help_text='The groups this user belongs to.'
     )
     user_permissions = models.ManyToManyField(
-        'auth.Permission',
+        Permission,
         related_name='custom_user_permissions',
         blank=True,
         verbose_name='user permissions',
@@ -62,6 +71,7 @@ class User(AbstractUser):
         return self.username
 
     def save(self, *args, **kwargs):
+        is_new = self.pk is None
         # Auto-assign role based on email domain if not explicitly set
         if not self.role:
             if self.email.endswith('@dentalcare.com'):
@@ -71,20 +81,23 @@ class User(AbstractUser):
         super().save(*args, **kwargs)
         
         # Automatically create related Dentist or Patient record
-        if self.role == 'dentist' and not hasattr(self, 'dentist'):
-            Dentist.objects.create(user=self)
-        elif self.role == 'patient' and not hasattr(self, 'patient'):
-            Patient.objects.create(user=self, member_since=timezone.now().date())
+        if is_new:
+            if self.role == 'dentist' and not hasattr(self, 'dentist'):
+                Dentist.objects.create(user=self)
+            elif self.role == 'patient' and not hasattr(self, 'patient'):
+                Patient.objects.create(user=self, member_since=timezone.now().date())
+
     def delete(self, *args, **kwargs):
-        """Ensure related records are deleted before user deletion."""
-        if hasattr(self, 'dentist'):
-            self.dentist.delete()
-        if hasattr(self, 'patient'):
-            self.patient.delete()
-        super().delete(*args, **kwargs)
+        with transaction.atomic():
+            # Only clear many-to-many relationships (not cascaded by default)
+            self.groups.clear()
+            self.user_permissions.clear()
+            # Let CASCADE handle everything else
+            super().delete(*args, **kwargs)
+
 
 class Dentist(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name='dentist')
+    user = models.OneToOneField('User', on_delete=models.CASCADE, primary_key=True, related_name='dentist')
     specialization = models.CharField(max_length=50, blank=True, null=True)
     experience = models.CharField(max_length=10, blank=True, null=True)
     qualification = models.CharField(max_length=50, blank=True, null=True)
@@ -92,14 +105,16 @@ class Dentist(models.Model):
     def __str__(self):
         return f"{self.user.username} - Dentist"
 
+
 class Patient(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name='patient')
+    user = models.OneToOneField('User', on_delete=models.CASCADE, primary_key=True, related_name='patient')
     emergency_contact = models.CharField(max_length=15, blank=True, null=True)
     allergies = models.TextField(blank=True, null=True)
     member_since = models.DateField(default=timezone.now)
     
     def __str__(self):
         return f"{self.user.username} - Patient"
+
 
 class DentalImage(models.Model):
     image = models.ImageField(upload_to='dental_images/')
@@ -109,6 +124,7 @@ class DentalImage(models.Model):
     def __str__(self):
         return f"Dental Image {self.id} - {self.image_type}"
 
+
 class Disease(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True, null=True)
@@ -116,8 +132,9 @@ class Disease(models.Model):
     def __str__(self):
         return self.name
 
+
 class ImageAnalysis(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
     original_image = models.ForeignKey(DentalImage, on_delete=models.CASCADE)
     analyzed_image_url = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -129,6 +146,7 @@ class ImageAnalysis(models.Model):
     class Meta:
         verbose_name_plural = "Image Analyses"
 
+
 class ImageClassification(models.Model):
     analysis = models.ForeignKey(ImageAnalysis, on_delete=models.CASCADE)
     disease = models.ForeignKey(Disease, on_delete=models.CASCADE)
@@ -136,6 +154,7 @@ class ImageClassification(models.Model):
     
     class Meta:
         unique_together = ('analysis', 'disease')
+
 
 class Appointment(models.Model):
     detail = models.TextField(blank=True, null=True)
@@ -150,6 +169,7 @@ class Appointment(models.Model):
     def __str__(self):
         return f"Appointment: {self.patient.user.username} with {self.dentist.user.username} on {self.date}"
 
+
 class Treatment(models.Model):
     detail = models.TextField()
     date = models.DateField()
@@ -158,6 +178,7 @@ class Treatment(models.Model):
     
     def __str__(self):
         return f"Treatment by {self.dentist.user.username} on {self.date}"
+
 
 class WorkSchedule(models.Model):
     DAYS_CHOICES = (
@@ -181,6 +202,7 @@ class WorkSchedule(models.Model):
     def __str__(self):
         return f"{self.dentist.user.username} schedule for {self.day}"
 
+
 class Blog(models.Model):
     title = models.CharField(max_length=100)
     content = models.TextField()
@@ -190,9 +212,10 @@ class Blog(models.Model):
     def __str__(self):
         return self.title
 
+
 class Comment(models.Model):
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='comments')
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     

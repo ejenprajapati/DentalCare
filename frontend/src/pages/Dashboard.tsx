@@ -150,7 +150,7 @@ const Dashboard: React.FC = () => {
                 <div className="appointment-item" key={appointment.id}>
                   <div className="appointment-avatar">
                     {/* Placeholder avatar - in production use actual images */}
-                    <img src={`https://randomuser.me/api/portraits/${appointment.gender === 'women' ? 'women' : 'men'}/${appointment.id % 100}.jpg`} alt={appointment.patient_name} />
+                    <img src={`https://randomuser.me/api/portraits/${appointment.gender.toLowerCase() === 'female' ? 'women' : 'men'}/${appointment.id % 100}.jpg`} alt={appointment.patient_name} />
                   </div>
                   <div className="appointment-details">
                     <h4>{appointment.patient_name}</h4>

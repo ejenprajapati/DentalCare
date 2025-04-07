@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound"
 import AICheckup from './pages/AICheckup';
 import Results  from './pages/Results';
 import ProtectedRoute from "./components/ProtectedRoute"
+import Dashboard from "./pages/Dashboard"
 // import AboutPage from './pages/AboutPage';
 // import ContactPage from './pages/ContactPage';
 import './App.css';
@@ -47,6 +48,7 @@ function App() {
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/ai-checkup" element={<ProtectedRoute><AICheckup /></ProtectedRoute>} />
               <Route path="/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/blogs" element={<BlogsPage />} />
               <Route path="/appointment" element={
                   <ProtectedRoute>

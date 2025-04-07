@@ -12,7 +12,7 @@ const AICheckup: React.FC = () => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
       setSelectedFile(file);
-      
+
       // Create a preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -34,7 +34,7 @@ const AICheckup: React.FC = () => {
     }
 
     setIsLoading(true);
-    
+
     // Create form data
     const formData = new FormData();
     formData.append('image', selectedFile);
@@ -46,10 +46,10 @@ const AICheckup: React.FC = () => {
           'Content-Type': 'multipart/form-data'
         }
       });
-      
+
       // Store the results in sessionStorage
       sessionStorage.setItem('analysisResults', JSON.stringify(response.data));
-      
+
       // Navigate to results page
       navigate('/results');
     } catch (error) {
@@ -68,9 +68,9 @@ const AICheckup: React.FC = () => {
           <h2>DENTAL CARE</h2>
         </div>
       </div>
-      
+
       <h1 className="page-title">AI Checkup</h1>
-      
+
       <div className="upload-container">
         <div className="image-preview">
           {imagePreview ? (
@@ -82,9 +82,9 @@ const AICheckup: React.FC = () => {
             </div>
           )}
         </div>
-        
-        <p className="image-type">X-ray Image</p>
-        
+
+        <p className="image-type">Dental Image</p>
+
         <div className="button-group">
           <input
             type="file"
@@ -96,8 +96,8 @@ const AICheckup: React.FC = () => {
           <button className="btn upload-btn" onClick={handleUpload}>
             Upload
           </button>
-          <button 
-            className="btn analyze-btn" 
+          <button
+            className="btn analyze-btn"
             onClick={handleAnalyze}
             disabled={!selectedFile || isLoading}
           >

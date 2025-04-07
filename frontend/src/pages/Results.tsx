@@ -1,8 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+interface AnalysisResults {
+  originalImage: string;
+  analyzedImage: string;
+  totalConditionsDetected: number;
+  calculusCount: number;
+  cariesCount: number;
+  gingivitisCount: number;
+  hypodontiaCount: number;
+  toothDiscolationCount: number;
+  ulcerCount: number;
+}
+
 const Results: React.FC = () => {
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<AnalysisResults | null>(null);
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -23,6 +35,16 @@ const Results: React.FC = () => {
   if (!results) {
     return <div className="loading">Loading results...</div>;
   }
+
+  // Define color mapping for different conditions
+  const conditionColors = {
+    calculus: "#FFD700", // Gold
+    caries: "#FF0000", // Red
+    gingivitis: "#FF69B4", // Hot pink
+    hypodontia: "#800080", // Purple
+    toothDiscolation: "#A0522D", // Brown (changed from tooth_discolation to match camelCase)
+    ulcer: "#FFA500" // Orange
+  };
   
   return (
     <div className="container">
@@ -49,51 +71,115 @@ const Results: React.FC = () => {
         
         <div className="stats-container">
           <div className="stat-box">
-            <h3>Teeth Detected</h3>
-            <p className="stat-value">{results.teethCount}</p>
+            <h3>Total Conditions Detected</h3>
+            <p className="stat-value">{results.totalConditionsDetected}</p>
           </div>
           
-          <div className="stat-box">
-            <h3>Caries Detected</h3>
-            <p className="stat-value">{results.cariesCount}</p>
-            <p className="stat-percentage">
-              ({results.cariesPercentage.toFixed(1)}% of teeth)
-            </p>
-          </div>
+          {results.calculusCount > 0 && (
+            <div className="stat-box">
+              <h3>Calculus</h3>
+              <p className="stat-value">{results.calculusCount}</p>
+            </div>
+          )}
           
-          <div className="stat-box">
-            <h3>Cracks Detected</h3>
-            <p className="stat-value">{results.crackCount}</p>
-            <p className="stat-percentage">
-              ({results.crackPercentage.toFixed(1)}% of teeth)
-            </p>
-          </div>
+          {results.cariesCount > 0 && (
+            <div className="stat-box">
+              <h3>Caries</h3>
+              <p className="stat-value">{results.cariesCount}</p>
+            </div>
+          )}
+
+          {results.gingivitisCount > 0 && (
+            <div className="stat-box">
+              <h3>Gingivitis</h3>
+              <p className="stat-value">{results.gingivitisCount}</p>
+            </div>
+          )}
+
+          {results.hypodontiaCount > 0 && (
+            <div className="stat-box">
+              <h3>Hypodontia</h3>
+              <p className="stat-value">{results.hypodontiaCount}</p>
+            </div>
+          )}
+
+          {results.toothDiscolationCount > 0 && (
+            <div className="stat-box">
+              <h3>Tooth Discoloration</h3>
+              <p className="stat-value">{results.toothDiscolationCount}</p>
+            </div>
+          )}
+
+          {results.ulcerCount > 0 && (
+            <div className="stat-box">
+              <h3>Ulcer</h3>
+              <p className="stat-value">{results.ulcerCount}</p>
+            </div>
+          )}
         </div>
         
         <div className="legend">
-          <div className="legend-item">
-            <div className="color-box" style={{backgroundColor: "#00FF00"}}></div>
-            <p>Tooth</p>
-          </div>
-          <div className="legend-item">
-            <div className="color-box" style={{backgroundColor: "#FF0000"}}></div>
-            <p>Caries (Cavity)</p>
-          </div>
-          <div className="legend-item">
-            <div className="color-box" style={{backgroundColor: "#FFA500"}}></div>
-            <p>Crack</p>
-          </div>
+          {results.calculusCount > 0 && (
+            <div className="legend-item">
+              <div className="color-box" style={{backgroundColor: conditionColors.calculus}}></div>
+              <p>Calculus</p>
+            </div>
+          )}
+          
+          {results.cariesCount > 0 && (
+            <div className="legend-item">
+              <div className="color-box" style={{backgroundColor: conditionColors.caries}}></div>
+              <p>Caries</p>
+            </div>
+          )}
+          
+          {results.gingivitisCount > 0 && (
+            <div className="legend-item">
+              <div className="color-box" style={{backgroundColor: conditionColors.gingivitis}}></div>
+              <p>Gingivitis</p>
+            </div>
+          )}
+          
+          {results.hypodontiaCount > 0 && (
+            <div className="legend-item">
+              <div className="color-box" style={{backgroundColor: conditionColors.hypodontia}}></div>
+              <p>Hypodontia</p>
+            </div>
+          )}
+          
+          {results.toothDiscolationCount > 0 && (
+            <div className="legend-item">
+              <div className="color-box" style={{backgroundColor: conditionColors.toothDiscolation}}></div>
+              <p>Tooth Discoloration</p>
+            </div>
+          )}
+          
+          {results.ulcerCount > 0 && (
+            <div className="legend-item">
+              <div className="color-box" style={{backgroundColor: conditionColors.ulcer}}></div>
+              <p>Ulcer</p>
+            </div>
+          )}
         </div>
         
         <div className="recommendation-box">
           <h3>Analysis Summary</h3>
           <p>
-            Based on our AI analysis, we have detected {results.teethCount} teeth in your X-ray.
+            Based on our AI analysis of your dental image:
+            {results.calculusCount > 0 && ` We found ${results.calculusCount} areas with calculus.`}
             {results.cariesCount > 0 && ` There are ${results.cariesCount} potential cavities that may require attention.`}
-            {results.crackCount > 0 && ` Additionally, ${results.crackCount} potential cracks were identified.`}
-            {results.cariesCount === 0 && results.crackCount === 0 ? 
-              ' No dental issues were detected in this X-ray.' : 
-              ' We recommend scheduling an appointment with your dentist to discuss these findings.'}
+            {results.gingivitisCount > 0 && ` We detected ${results.gingivitisCount} areas showing signs of gingivitis.`}
+            {results.hypodontiaCount > 0 && ` The analysis shows ${results.hypodontiaCount} potential cases of hypodontia.`}
+            {results.toothDiscolationCount > 0 && ` There are ${results.toothDiscolationCount} teeth showing discoloration.`}
+            {results.ulcerCount > 0 && ` We identified ${results.ulcerCount} potential ulcers.`}
+            {(results.calculusCount === 0 && 
+              results.cariesCount === 0 && 
+              results.gingivitisCount === 0 && 
+              results.hypodontiaCount === 0 && 
+              results.toothDiscolationCount === 0 && 
+              results.ulcerCount === 0)
+              ? ' No dental issues were detected in this image.' 
+              : ' We recommend scheduling an appointment with your dentist to discuss these findings.'}
           </p>
         </div>
         

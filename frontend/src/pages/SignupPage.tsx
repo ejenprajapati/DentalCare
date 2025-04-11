@@ -31,7 +31,7 @@ function SignupPage() {
     { value: 'orthodontics', label: 'Orthodontics' },
     { value: 'periodontics', label: 'Periodontics' },
     { value: 'endodontics', label: 'Endodontics' },
-    { value: 'oral_surgery', label: 'Oral Surgery' },
+    { value: 'oral surgery', label: 'Oral Surgery' },
     { value: 'pediatric', label: 'Pediatric Dentistry' },
     { value: 'prosthodontics', label: 'Prosthodontics' }
   ];

@@ -32,17 +32,26 @@ function LoginPage() {
       const res= await api.post("/api/token/", {username: formData.username ,password: formData.password})
       localStorage.setItem(ACCESS_TOKEN, res.data.access)
       localStorage.setItem(REFRESH_TOKEN, res.data.refresh)
-      navigate("/")
-    }catch(error){
-      alert(error)
-
-    }finally{
-      setLoading(false)
-
+      
+      // Get user details to check role
+    const userRes = await api.get("http://127.0.0.1:8000/api/user/profile", {
+      headers: {
+        Authorization: `Bearer ${res.data.access}`
+      }
+    });
+    
+    // Redirect based on role
+    if (userRes.data.role === 'dentist') {
+      navigate("/dashboard");
+    } else {
+      navigate("/");
     }
-    
-    
-  };
+  } catch(error) {
+    alert(error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="auth-page login-page">

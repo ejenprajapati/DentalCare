@@ -105,7 +105,7 @@ const Results: React.FC = () => {
 
           {results.toothDiscolationCount > 0 && (
             <div className="stat-box">
-              <h3>Tooth Discoloration</h3>
+              <h3>Tooth Dislocation</h3>
               <p className="stat-value">{results.toothDiscolationCount}</p>
             </div>
           )}
@@ -150,7 +150,7 @@ const Results: React.FC = () => {
           {results.toothDiscolationCount > 0 && (
             <div className="legend-item">
               <div className="color-box" style={{backgroundColor: conditionColors.toothDiscolation}}></div>
-              <p>Tooth Discoloration</p>
+              <p>Tooth Dislocation</p>
             </div>
           )}
           
@@ -170,7 +170,7 @@ const Results: React.FC = () => {
             {results.cariesCount > 0 && ` There are ${results.cariesCount} potential cavities that may require attention.`}
             {results.gingivitisCount > 0 && ` We detected ${results.gingivitisCount} areas showing signs of gingivitis.`}
             {results.hypodontiaCount > 0 && ` The analysis shows ${results.hypodontiaCount} potential cases of hypodontia.`}
-            {results.toothDiscolationCount > 0 && ` There are ${results.toothDiscolationCount} teeth showing discoloration.`}
+            {results.toothDiscolationCount > 0 && ` There are ${results.toothDiscolationCount} teeth showing dislocation.`}
             {results.ulcerCount > 0 && ` We identified ${results.ulcerCount} potential ulcers.`}
             {(results.calculusCount === 0 && 
               results.cariesCount === 0 && 

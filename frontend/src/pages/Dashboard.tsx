@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import axios from 'axios';
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
@@ -35,14 +35,14 @@ interface DashboardStats {
   appointments: AppointmentData[];
   recent_patients: PatientData[];
   gender_distribution: GenderDistribution;
-  dentist_name?: string; // Add dentist name from response
+  dentist_name?: string;
 }
 
 const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [year, setYear] = useState<string>("2023");
+  const [year, setYear] = useState<string>("2025");
   const [dentistName, setDentistName] = useState<string>("");
 
   useEffect(() => {
@@ -89,7 +89,7 @@ const Dashboard: React.FC = () => {
     return [
       { name: 'Male', value: distribution.male },
       { name: 'Female', value: distribution.female },
-      { name: 'Child', value: distribution.child }
+      { name: 'Other', value: distribution.child }
     ];
   };
 
@@ -105,6 +105,26 @@ const Dashboard: React.FC = () => {
 
   // Calculate the number of returning patients safely
   const returningPatients = stats ? (stats.total_patients - (stats.new_patients_count || 0)) : 0;
+
+  // Helper function to get appropriate gender display icon/class
+  const getGenderIcon = (gender: string) => {
+    const normalizedGender = gender?.toLowerCase();
+    if (normalizedGender === 'male') return 'men';
+    if (normalizedGender === 'female') return 'women';
+    return 'men'; // Default fallback
+  };
+
+  // Custom tooltip for the pie chart
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="custom-tooltip">
+          <p className="label">{`${payload[0].name}: ${payload[0].value}`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="dashboard-container">
@@ -149,8 +169,7 @@ const Dashboard: React.FC = () => {
               stats.appointments.map((appointment) => (
                 <div className="appointment-item" key={appointment.id}>
                   <div className="appointment-avatar">
-                    {/* Placeholder avatar - in production use actual images */}
-                    <img src={`https://randomuser.me/api/portraits/${appointment.gender.toLowerCase() === 'female' ? 'women' : 'men'}/${appointment.id % 100}.jpg`} alt={appointment.patient_name} />
+                    <img src={`/api/placeholder/48/48`} alt={appointment.patient_name} />
                   </div>
                   <div className="appointment-details">
                     <h4>{appointment.patient_name}</h4>
@@ -221,12 +240,14 @@ const Dashboard: React.FC = () => {
                     outerRadius={80}
                     paddingAngle={5}
                     dataKey="value"
-                    label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    labelLine={false}
                   >
                     {formatGenderData(stats?.gender_distribution).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend layout="horizontal" verticalAlign="bottom" align="center" />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -251,7 +272,7 @@ const Dashboard: React.FC = () => {
                 <tr key={patient.id}>
                   <td>
                     <div className="patient-name-cell">
-                      <img src={`https://randomuser.me/api/portraits/${patient.gender === 'Women' ? 'women' : 'men'}/${patient.id % 100}.jpg`} alt={patient.name} />
+                      <img src={`/api/placeholder/40/40`} alt={patient.name} />
                       <span>{patient.name}</span>
                     </div>
                   </td>

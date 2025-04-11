@@ -225,6 +225,7 @@ class WorkScheduleViewSet(viewsets.ModelViewSet):
 
 class AnalyzeImageView(APIView):
     parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [AllowAny]
     print("inside analye image")
     def post(self, request, *args, **kwargs):
         print("AnalyzeImageView post method called!")
@@ -366,7 +367,6 @@ class DashboardStatsView(APIView):
         """
         Get statistics for the dentist dashboard
         """
-        print("inside get")
         if request.user.role != 'dentist':
             return Response(
                 {"error": "Only dentists can access dashboard stats"}, 
@@ -375,7 +375,7 @@ class DashboardStatsView(APIView):
         
         dentist = request.user.dentist
         today = timezone.now().date()
-        print("if  satisfied")
+        
         # Get appointment counts
         total_appointments = Appointment.objects.filter(dentist=dentist).count()
         
@@ -405,7 +405,7 @@ class DashboardStatsView(APIView):
                 'patient_id': appointment.patient.user.id,
                 'time': f"{appointment.start_time.strftime('%H:%M')} - {appointment.end_time.strftime('%H:%M')}",
                 'status': 'Confirmed' if appointment.approved else 'Pending',
-                'gender': 'Male' if patient_user.first_name.endswith('o') else 'Female',  # This is an approximation, you might want to add a gender field
+                'gender': patient_user.gender or 'Unknown',  # Get actual gender from User model
                 'date': appointment.date.strftime('%m/%d/%y'),
                 'detail': appointment.detail
             })
@@ -424,19 +424,39 @@ class DashboardStatsView(APIView):
             
             if last_visit:
                 patient_user = patient.user
+                visit_id= 1000+patient_user.id
                 recent_patients_list.append({
                     'id': patient_user.id,
                     'name': f"{patient_user.first_name} {patient_user.last_name}",
-                    'visit_id': f"{'OPD' if patient.emergency_contact else 'IPD'}-{1000 + patient_user.id}",
+                    # 'visit_id': f"{'OPD' if patient.emergency_contact else 'IPD'}-{1000 + patient_user.id}",
+                    'visit_id': visit_id,
                     'date': last_visit.date.strftime('%m/%d/%y'),
-                    'gender': 'Male' if patient_user.first_name.endswith('o') else 'Female'  # Approximation
+                    'gender': patient_user.gender or 'Unknown'  # Get actual gender from User model
                 })
         
-        # Get gender distribution (simplified for this example)
-        # In a real app, you'd have a gender field in your User or Patient model
-        male_count = total_patients * 0.45  # Approximated based on the pie chart
-        female_count = total_patients * 0.3
-        child_count = total_patients * 0.25
+        # Get actual gender distribution from patients who have appointments with this dentist
+        gender_counts = {
+            'male': 0,
+            'female': 0,
+            'others': 0
+        }
+        
+        # Query all patients of this dentist and count their genders
+        patients_with_appointments = Patient.objects.filter(
+            appointment__dentist=dentist
+        ).distinct().select_related('user')
+        
+        for patient in patients_with_appointments:
+            user_gender = patient.user.gender
+            # Determine if the patient is a child (you may want to adjust this logic)
+            
+            if user_gender == 'male':
+                gender_counts['male'] += 1
+            elif user_gender == 'female':
+                gender_counts['female'] += 1
+            else:
+                # For 'other' 
+                gender_counts['others'] += 1
         
         return Response({
             'total_appointments': total_appointments,
@@ -444,9 +464,5 @@ class DashboardStatsView(APIView):
             'total_patients': total_patients,
             'appointments': appointment_list,
             'recent_patients': recent_patients_list,
-            'gender_distribution': {
-                'male': int(male_count),
-                'female': int(female_count),
-                'child': int(child_count)
-            }
+            'gender_distribution': gender_counts
         })

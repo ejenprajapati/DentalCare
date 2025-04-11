@@ -41,7 +41,7 @@ const AICheckup: React.FC = () => {
 
     try {
       // Fixed URL - removed trailing slash to match backend URL pattern
-      const response = await axios.post('http://localhost:8000/api/analyze-image/', formData, {
+      const response = await axios.post('http://127.0.0.1:8000/api/analyze-image/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

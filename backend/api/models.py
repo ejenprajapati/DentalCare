@@ -181,26 +181,23 @@ class Treatment(models.Model):
 
 
 class WorkSchedule(models.Model):
-    DAYS_CHOICES = (
-        ('Monday', 'Monday'),
-        ('Tuesday', 'Tuesday'),
-        ('Wednesday', 'Wednesday'),
-        ('Thursday', 'Thursday'),
-        ('Friday', 'Friday'),
-        ('Saturday', 'Saturday'),
-        ('Sunday', 'Sunday'),
-    )
-    
-    dentist = models.ForeignKey(Dentist, on_delete=models.CASCADE)
-    day = models.CharField(max_length=10, choices=DAYS_CHOICES)
-    start_time = models.TimeField()
-    end_time = models.TimeField()
+    dentist = models.ForeignKey(Dentist, related_name='work_schedules', on_delete=models.CASCADE)
+    day = models.CharField(max_length=10)  # e.g., Monday, Tuesday, etc.
+    start_hour = models.CharField(max_length=2, default='9')  # Default 9 AM
+    end_hour = models.CharField(max_length=2, default='17')  # Default 5 PM
     
     class Meta:
         unique_together = ('dentist', 'day')
+        ordering = ['day']
     
     def __str__(self):
-        return f"{self.dentist.user.username} schedule for {self.day}"
+        return f"{self.dentist.user.get_full_name()} - {self.day} ({self.start_hour}:00 - {self.end_hour}:00)"
+    class Meta:
+        unique_together = ('dentist', 'day')  # Each dentist can have only one schedule per day
+        ordering = ['day']
+    
+    def __str__(self):
+        return f"{self.dentist.user.get_full_name()} - {self.day} ({self.start_hour}:00 - {self.end_hour}:00)"
 
 
 class Blog(models.Model):

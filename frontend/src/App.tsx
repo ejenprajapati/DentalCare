@@ -4,7 +4,8 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
+import SignupPage from './pages/PatientSignup';
+import DentistSignup from './pages/DentistSignup';
 import ServicesPage from './pages/ServicesPage';
 import BlogsPage from './pages/BlogsPage';
 import AppointmentPage from './pages/AppointmentPage';
@@ -49,6 +50,7 @@ function App() {
               <Route path="/ai-checkup" element={<ProtectedRoute><AICheckup /></ProtectedRoute>} />
               <Route path="/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/add-dentist" element={<DentistSignup />} />
               <Route path="/blogs" element={<BlogsPage />} />
               <Route path="/appointment" element={
                   <ProtectedRoute>

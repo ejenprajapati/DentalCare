@@ -69,16 +69,42 @@ class RegisterDentistSerializer(serializers.ModelSerializer):
     specialization = serializers.CharField(required=False)
     experience = serializers.CharField(required=False)
     qualification = serializers.CharField(required=False)
-
+    work_schedule = serializers.ListField(
+        child=serializers.DictField(),
+        required=False
+    )
     
     class Meta:
         model = User
         fields = ['username', 'email', 'password', 'first_name', 'last_name', 
-                 'phone_number', 'specialization', 'experience', 'qualification', 'gender']
+                 'phone_number', 'specialization', 'experience', 'qualification', 
+                 'gender', 'work_schedule']
     
     def validate_email(self, value):
         if not value.endswith('@dentalcare.com'):
             raise serializers.ValidationError("Dentist email must end with @dentalcare.com")
+        return value
+    
+    def validate_work_schedule(self, value):
+        if not value:
+            raise serializers.ValidationError("At least one working day is required")
+        
+        for schedule in value:
+            if 'day' not in schedule or 'start_hour' not in schedule or 'end_hour' not in schedule:
+                raise serializers.ValidationError("Each schedule must have day, start_hour, and end_hour")
+            
+            try:
+                start_hour = int(schedule['start_hour'])
+                end_hour = int(schedule['end_hour'])
+                
+                if start_hour >= end_hour:
+                    raise serializers.ValidationError(f"End time must be after start time for {schedule['day']}")
+                
+                if end_hour - start_hour < 5:
+                    raise serializers.ValidationError(f"Working hours must be at least 5 hours for {schedule['day']}")
+            except ValueError:
+                raise serializers.ValidationError("Hours must be integers")
+        
         return value
     
     def create(self, validated_data):
@@ -86,6 +112,7 @@ class RegisterDentistSerializer(serializers.ModelSerializer):
         experience = validated_data.pop('experience', None)
         qualification = validated_data.pop('qualification', None)
         gender = validated_data.pop('gender', None)
+        work_schedule = validated_data.pop('work_schedule', [])
         
         user = User.objects.create_user(
             username=validated_data['username'],
@@ -106,6 +133,16 @@ class RegisterDentistSerializer(serializers.ModelSerializer):
         if qualification:
             dentist.qualification = qualification
         dentist.save()
+        
+        # Create work schedule
+        if work_schedule:
+            for schedule in work_schedule:
+                WorkSchedule.objects.create(
+                    dentist=dentist,
+                    day=schedule['day'],
+                    start_hour=schedule['start_hour'],
+                    end_hour=schedule['end_hour']
+                )
         
         return user
 

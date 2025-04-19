@@ -23,6 +23,7 @@ interface Patient {
 
 interface AppointmentFormData {
   detail: string;
+  customDetail: string;
   date: string;
   start_time: string;
   end_time: string;
@@ -39,6 +40,40 @@ interface UserProfile {
   };
 }
 
+// Define common dental visit reasons
+const VISIT_REASONS = [
+  "Regular Checkup",
+  "Teeth Cleaning",
+  "Toothache",
+  "Cavity/Filling",
+  "Root Canal",
+  "Crown/Bridge Work",
+  "Dentures",
+  "Implants",
+  "Teeth Whitening",
+  "Orthodontic Consultation",
+  "Wisdom Teeth",
+  "Gum Disease Treatment",
+  "Emergency Visit",
+  "Other"
+];
+
+// Define available time slots (9AM to 6PM)
+const generateTimeOptions = () => {
+  const times = [];
+  for (let hour = 9; hour <= 18; hour++) {
+    // Add hour:00
+    times.push(`${hour.toString().padStart(2, '0')}:00`);
+    // Add hour:30 if not the last hour (6PM)
+    if (hour < 18) {
+      times.push(`${hour.toString().padStart(2, '0')}:30`);
+    }
+  }
+  return times;
+};
+
+const TIME_OPTIONS = generateTimeOptions();
+
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
 const AppointmentPage: React.FC = () => {
@@ -48,15 +83,38 @@ const AppointmentPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [availableEndTimes, setAvailableEndTimes] = useState<string[]>([]);
 
   const [formData, setFormData] = useState<AppointmentFormData>({
     detail: '',
+    customDetail: '',
     date: '',
     start_time: '',
     end_time: '',
     dentist: 0,
     agreeToPrivacy: false,
   });
+
+  // Effect to update available end times based on selected start time
+  useEffect(() => {
+    if (formData.start_time) {
+      const startTimeIndex = TIME_OPTIONS.indexOf(formData.start_time);
+      if (startTimeIndex !== -1 && startTimeIndex < TIME_OPTIONS.length - 1) {
+        // Set available end times to be after the selected start time
+        setAvailableEndTimes(TIME_OPTIONS.slice(startTimeIndex + 1));
+        
+        // Reset end time if it's now invalid
+        if (formData.end_time && TIME_OPTIONS.indexOf(formData.end_time) <= startTimeIndex) {
+          setFormData(prev => ({
+            ...prev,
+            end_time: ''
+          }));
+        }
+      }
+    } else {
+      setAvailableEndTimes([]);
+    }
+  }, [formData.start_time]);
 
   const getAuthToken = () => {
     // Try to get token from localStorage
@@ -217,24 +275,40 @@ const AppointmentPage: React.FC = () => {
       }
       
       // Validate times - ensure end time is after start time
-      const startTime = formData.start_time;
-      const endTime = formData.end_time;
-      if (startTime >= endTime) {
+      if (!formData.start_time || !formData.end_time) {
+        setError('Please select both start and end times.');
+        setLoading(false);
+        return;
+      }
+      
+      const startTimeIndex = TIME_OPTIONS.indexOf(formData.start_time);
+      const endTimeIndex = TIME_OPTIONS.indexOf(formData.end_time);
+      
+      if (startTimeIndex >= endTimeIndex) {
         setError('End time must be after start time.');
         setLoading(false);
         return;
       }
       
+      // For "Other" reason, use the customDetail field
+      const finalDetail = formData.detail === 'Other' 
+        ? formData.customDetail
+        : formData.detail;
+        
+      if (formData.detail === 'Other' && !formData.customDetail.trim()) {
+        setError('Please specify the reason for your visit.');
+        setLoading(false);
+        return;
+      }
       
       // Create appointment data object
       const appointmentData: any = {
-        detail: formData.detail,
+        detail: finalDetail,
         date: formData.date,
         start_time: formData.start_time,
         end_time: formData.end_time,
         dentist: Number(formData.dentist)
       };
-      
       
       // Add patient ID if user is a dentist making an appointment for a patient
       if (userProfile?.role === 'dentist' && formData.patient) {
@@ -262,6 +336,7 @@ const AppointmentPage: React.FC = () => {
       // Reset form
       setFormData({
         detail: '',
+        customDetail: '',
         date: '',
         start_time: '',
         end_time: '',
@@ -352,27 +427,40 @@ const AppointmentPage: React.FC = () => {
               
               <div className="form-row">
                 <div className="form-group">
-                  <label>Start Time</label>
-                  <input 
-                    type="time" 
+                  <label>Start Time (9AM-5:30PM)</label>
+                  <select 
                     name="start_time" 
-                    className="form-control" 
+                    className="form-control"
                     value={formData.start_time}
                     onChange={handleChange}
                     required
-                  />
+                  >
+                    <option value="">Select Start Time</option>
+                    {TIME_OPTIONS.slice(0, -1).map((time) => (
+                      <option key={`start-${time}`} value={time}>
+                        {time}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 
                 <div className="form-group">
-                  <label>End Time</label>
-                  <input 
-                    type="time" 
+                  <label>End Time (until 6PM)</label>
+                  <select 
                     name="end_time" 
-                    className="form-control" 
+                    className="form-control"
                     value={formData.end_time}
                     onChange={handleChange}
                     required
-                  />
+                    disabled={!formData.start_time}
+                  >
+                    <option value="">Select End Time</option>
+                    {availableEndTimes.map((time) => (
+                      <option key={`end-${time}`} value={time}>
+                        {time}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
               
@@ -426,16 +514,37 @@ const AppointmentPage: React.FC = () => {
               
               <div className="form-group">
                 <label>Reason for Visit</label>
-                <textarea 
+                <select 
                   name="detail" 
-                  className="form-control" 
-                  rows={5} 
-                  placeholder="Please describe the reason for your appointment..." 
+                  className="form-control"
                   value={formData.detail}
                   onChange={handleChange}
                   required
-                ></textarea>
+                >
+                  <option value="">Select a reason</option>
+                  {VISIT_REASONS.map((reason) => (
+                    <option key={reason} value={reason}>
+                      {reason}
+                    </option>
+                  ))}
+                </select>
               </div>
+              
+              {/* Show custom reason text field only when "Other" is selected */}
+              {formData.detail === 'Other' && (
+                <div className="form-group">
+                  <label>Please specify your reason</label>
+                  <textarea 
+                    name="customDetail" 
+                    className="form-control" 
+                    rows={5} 
+                    placeholder="Please describe the reason for your appointment..." 
+                    value={formData.customDetail}
+                    onChange={handleChange}
+                    required
+                  ></textarea>
+                </div>
+              )}
               
               <div className="privacy-checkbox">
                 <input 

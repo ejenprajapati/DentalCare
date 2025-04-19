@@ -1,0 +1,299 @@
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import logoTooth from '../assets/tooth-logo.png';
+import api from "../api";
+
+interface GenderOption {
+  value: string;
+  label: string;
+}
+
+function PatientSignupPage() {
+  const genders: GenderOption[] = [
+    { value: 'male', label: 'Male' },
+    { value: 'female', label: 'Female' },
+    { value: 'other', label: 'Other' },
+    { value: 'prefer_not_to_say', label: 'Prefer not to say' }
+  ];
+
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    username: '',
+    password: '',
+    confirmPassword: '',
+    phoneNumber: '',
+    gender: '',
+    emergencyContact: '',
+    allergies: '',
+    agreeTerms: false
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const navigate = useNavigate();
+
+  // Check email domain when email changes
+  const validateEmail = (email: string): boolean => {
+    if (email && email.endsWith('@dentalcare.com')) {
+      setEmailError('Patient email cannot end with @dentalcare.com');
+      return false;
+    }
+    setEmailError('');
+    return true;
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    
+    const newValue = type === 'checkbox' ? checked : value;
+    
+    setFormData(prev => ({
+      ...prev,
+      [name]: newValue
+    }));
+
+    if (name === 'email') {
+      validateEmail(value);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords don't match!");
+      return;
+    }
+
+    if (emailError) {
+      alert(emailError);
+      return;
+    }
+
+    if (!formData.gender) {
+      alert("Please select your gender!");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const requestData = {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone_number: formData.phoneNumber,
+        gender: formData.gender,
+        emergency_contact: formData.emergencyContact,
+        allergies: formData.allergies
+      };
+        
+      // Call patient registration endpoint
+      await api.post("/api/user/register/patient/", requestData);
+
+      navigate("/login");
+    } catch (error) {
+      console.error("Registration error:", error);
+      alert("Registration failed: " + (error instanceof Error ? error.message : String(error)));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="auth-page signup-page">
+      <div className="auth-container">
+        <div className="auth-image">
+          <img src={logoTooth} alt="Dental Care Logo" className="tooth-logo" />
+          <h2>DENTAL CARE</h2>
+        </div>
+        
+        <div className="auth-form-container">
+          <h2>Create Patient Account</h2>
+          
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="form-group">
+              <div className="input-icon">
+                <i className="fas fa-user"></i>
+              </div>
+              <input
+                type="text"
+                name="firstName"
+                placeholder="First Name"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <div className="input-icon">
+                <i className="fas fa-user"></i>
+              </div>
+              <input
+                type="text"
+                name="lastName"
+                placeholder="Last Name"
+                value={formData.lastName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            
+            <div className="form-group">
+              <div className="input-icon">
+                <i className="fas fa-user"></i>
+              </div>
+              <input
+                type="text"
+                name="username"
+                placeholder="Username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            
+            <div className="form-group">
+              <div className="input-icon">
+                <i className="fas fa-envelope"></i>
+              </div>
+              <input
+                type="email"
+                name="email"
+                placeholder="Enter your Email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+              {emailError && <div className="error-message">{emailError}</div>}
+            </div>
+
+            <div className="form-group">
+              <div className="input-icon">
+                <i className="fas fa-phone"></i>
+              </div>
+              <input
+                type="text"
+                name="phoneNumber"
+                placeholder="Phone Number"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            {/* Gender Selection */}
+            <div className="form-group">
+              <label htmlFor="gender">Gender:</label>
+              <select
+                name="gender"
+                id="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select Gender</option>
+                {genders.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="form-group">
+              <div className="input-icon">
+                <i className="fas fa-lock"></i>
+              </div>
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            
+            <div className="form-group">
+              <div className="input-icon">
+                <i className="fas fa-lock"></i>
+              </div>
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Re-type Password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <div className="input-icon">
+                <i className="fas fa-phone"></i>
+              </div>
+              <input
+                type="text"
+                name="emergencyContact"
+                placeholder="Emergency Contact Number"
+                value={formData.emergencyContact}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <div className="input-icon">
+                <i className="fas fa-notes-medical"></i>
+              </div>
+              <textarea
+                name="allergies"
+                placeholder="List any allergies or medical conditions"
+                value={formData.allergies}
+                onChange={handleChange}
+                rows={3}
+              />
+            </div>
+            
+            <div className="form-options">
+              <div className="terms-checkbox">
+                <input
+                  type="checkbox"
+                  id="agreeTerms"
+                  name="agreeTerms"
+                  checked={formData.agreeTerms}
+                  onChange={handleChange}
+                  required
+                />
+                <label htmlFor="agreeTerms">I agree with Terms and Privacy</label>
+              </div>
+            </div>
+            
+            <button 
+              type="submit" 
+              className="btn btn-primary btn-block"
+              disabled={loading || !!emailError}
+            >
+              {loading ? 'Signing up...' : 'Sign up'}
+            </button>
+          </form>
+          
+          <p className="auth-redirect">
+            Have account? <Link to="/login">Sign In</Link>
+          </p>
+          <p className="auth-redirect">
+            Are you a dentist? <Link to="/signup/dentist">Register as Dentist</Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default PatientSignupPage;

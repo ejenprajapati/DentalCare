@@ -113,9 +113,9 @@ class TreatmentAdmin(admin.ModelAdmin):
 
 @admin.register(WorkSchedule)
 class WorkScheduleAdmin(admin.ModelAdmin):
-    list_display = ('dentist', 'day', 'start_time', 'end_time')
-    list_filter = ('day',)
-    search_fields = ('dentist__user__username',)
+    list_display = ['dentist', 'day', 'start_hour', 'end_hour']
+    list_filter = ['day']
+    search_fields = ['dentist__user__first_name', 'dentist__user__last_name', 'day']
 
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):

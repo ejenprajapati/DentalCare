@@ -12,29 +12,41 @@ User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     patient = serializers.SerializerMethodField()
+    profile_picture = serializers.ImageField(required=False)
+    
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password', 'phone_number', 'role', 'gender', 'patient']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password', 
+                 'phone_number', 'role', 'gender', 'patient', 'profile_picture', 'profile_picture_url']
         extra_kwargs = {
             'password': {'write_only': True},
         }
     
     def get_patient(self, obj):
         if obj.role == 'patient' and hasattr(obj, 'patient'):
-            return {'id': obj.patient.pk}
+            return PatientSerializer(obj.patient).data
         return None
 
-    def create(self, validated_data):
-        user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            password=validated_data['password'],
-            first_name=validated_data.get('first_name', ''),
-            last_name=validated_data.get('last_name', ''),
-            phone_number=validated_data.get('phone_number', ''),
-        )
-        return user
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        
+        # Handle profile picture
+        profile_picture = validated_data.pop('profile_picture', None)
+        if profile_picture:
+            instance.profile_picture = profile_picture
+            instance.profile_picture_url = "pending"
+        
+        # Update other fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        # Set password if provided
+        if password:
+            instance.set_password(password)
+            
+        instance.save()
+        return instance
 
 class DentistSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
@@ -107,7 +119,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
         
         return data
 class PatientSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
+    # user = UserSerializer(read_only=True)
     id = serializers.IntegerField(source='user_id', read_only=True)
     appointments = AppointmentSerializer(many=True, read_only=True, source='appointment')
 

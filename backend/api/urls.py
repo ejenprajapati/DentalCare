@@ -11,9 +11,10 @@ from .views import (
     BlogViewSet, CommentViewSet, WorkScheduleViewSet,
     UserProfileView, AnalyzeImageView,
     # Import the registration views that you have or will create
-    RegisterPatientView, RegisterDentistView, UserAnalysisListView
+    RegisterPatientView, RegisterDentistView, UserAnalysisListView,ChangePasswordView
 )
-
+from django.conf import settings
+from django.conf.urls.static import static
 router = DefaultRouter()
 router.register(r'dentists', DentistViewSet, basename='dentist')
 router.register(r'patients', PatientViewSet, basename='patient')
@@ -48,5 +49,6 @@ urlpatterns = [
     path('analyze-image/', AnalyzeImageView.as_view(), name='analyze-image'),
     path('dashboard/stats/', DashboardStatsView.as_view(), name='dashboard-stats'),
     path('user/analyses/', UserAnalysisListView.as_view(), name='user-analyses'),
+    path('user/change-password/', ChangePasswordView.as_view(), name='change-password'),
     
-]
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

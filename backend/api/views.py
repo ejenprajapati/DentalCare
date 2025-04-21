@@ -44,6 +44,7 @@ from django.contrib.auth import get_user_model
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.files.base import ContentFile
+from django.contrib.auth import authenticate
 
 User = get_user_model()  
 # Keep your existing AnalyzeImageView
@@ -72,7 +73,7 @@ class RegisterPatientView(generics.CreateAPIView):
         return super().create(request, *args, **kwargs)
 
 # User Profile
-class UserProfileView(generics.RetrieveUpdateAPIView):
+class UserProfileView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
     
@@ -87,6 +88,10 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         print(f"Auth header: {request.headers.get('Authorization', 'None')}")
         print(f"Session auth: {request.session.get('_auth_user_id', 'None')}")
         return super().retrieve(request, *args, **kwargs)
+    def destroy(self, request, *args, **kwargs):
+        user = self.get_object()
+        self.perform_destroy(user)
+        return Response({"detail": "Account successfully deleted."}, status=status.HTTP_204_NO_CONTENT)
 
 # Dentist Views
 class DentistViewSet(viewsets.ModelViewSet):
@@ -578,3 +583,29 @@ class UserAnalysisListView(generics.ListAPIView):
     
     def get_queryset(self):
         return ImageAnalysis.objects.filter(user=self.request.user).order_by('-created_at')
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        user = request.user
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
+        
+        if not current_password or not new_password:
+            return Response(
+                {'error': 'Both current and new password are required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Verify current password
+        if not authenticate(username=user.username, password=current_password):
+            return Response(
+                {'error': 'Current password is incorrect'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Set new password
+        user.set_password(new_password)
+        user.save()
+        
+        return Response({'success': True})

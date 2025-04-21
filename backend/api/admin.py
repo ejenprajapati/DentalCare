@@ -22,7 +22,7 @@ class PatientInline(admin.StackedInline):
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name', 'gender','role', 'is_staff')
+    list_display = ('username', 'email', 'first_name', 'last_name', 'gender','role', 'is_staff','profile_picture', 'profile_picture_url')
     list_filter = ('role', 'is_staff', 'is_superuser')
     fieldsets = (
         (None, {'fields': ('username', 'password')}),

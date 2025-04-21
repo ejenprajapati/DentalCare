@@ -43,7 +43,9 @@ class User(AbstractUser):
         ('female', 'Female'),
         ('other', 'Other'),
     )
-    
+    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
+    profile_picture_url = models.CharField(max_length=255, default="none")
+
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='patient')
@@ -78,7 +80,14 @@ class User(AbstractUser):
                 self.role = 'dentist'
             else:
                 self.role = 'patient'
+        if self.profile_picture and (self.profile_picture_url == "none" or self.profile_picture_url == "pending"):
+            # Need to save first to get the URL
+            super().save(*args, **kwargs)
+            self.profile_picture_url = self.profile_picture.url
+            # Save again to update the URL
+            return super().save(update_fields=['profile_picture_url'])
         super().save(*args, **kwargs)
+        
         
         # Automatically create related Dentist or Patient record
         if is_new:

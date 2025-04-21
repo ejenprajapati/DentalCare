@@ -7,7 +7,7 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/PatientSignup';
 import DentistSignup from './pages/DentistSignup';
 import ServicesPage from './pages/ServicesPage';
-import BlogsPage from './pages/BlogsPage';
+import ProfilePage from './pages/ProfilePage';
 import AppointmentPage from './pages/AppointmentPage';
 import DentistAppointment from './pages/DentistAppointment';
 import NotFound from "./pages/NotFound"
@@ -56,6 +56,7 @@ function App() {
               <Route path="/add-dentist" element={<DentistSignup />} />
               <Route path="/dentist-appointment" element={<DentistAppointment/>} />
               <Route path="/patients" element={<Patient />} />
+              <Route path="/profile" element={<ProfilePage />} />
               <Route path="/analysis-history" element={<AnalysisHistory />} />
               <Route path="/appointment" element={
                   <ProtectedRoute>

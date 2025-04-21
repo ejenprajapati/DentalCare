@@ -2,6 +2,7 @@ import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import appointment_img from '../assets/appointment-page.png';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
+
 interface Dentist {
   id?: number;
   user: {
@@ -30,7 +31,7 @@ interface AppointmentFormData {
   dentist: number;
   patient?: number | string;
   agreeToPrivacy: boolean;
-  analyzed_image_id?: number | string; 
+  analyzed_image_id?: number | string;
 }
 
 interface UserProfile {
@@ -115,9 +116,7 @@ const VISIT_REASON_TO_SPECIALIZATION: Record<string, string> = {
 const generateTimeOptions = () => {
   const times = [];
   for (let hour = 9; hour <= 18; hour++) {
-    // Add hour:00
     times.push(`${hour.toString().padStart(2, '0')}:00`);
-    // Add hour:30 if not the last hour (6PM)
     if (hour < 18) {
       times.push(`${hour.toString().padStart(2, '0')}:30`);
     }
@@ -133,9 +132,7 @@ interface DaySchedule {
   day: string;
   start_hour: string;
   end_hour: string;
-  // add other properties if needed
 }
-let daySchedule: DaySchedule | undefined;
 
 const AppointmentPage: React.FC = () => {
   const [dentists, setDentists] = useState<Dentist[]>([]);
@@ -165,31 +162,30 @@ const AppointmentPage: React.FC = () => {
     agreeToPrivacy: false,
     analyzed_image_id: '',
   });
-  
-    const location = useLocation();
-    
-    // Add this effect to handle URL parameters when the component loads
-    useEffect(() => {
-      const params = new URLSearchParams(location.search);
-      const patientId = params.get('patient');
-      
-      if (patientId) {
-        setFormData(prev => ({
-          ...prev,
-          patient: patientId
-        }));
-        
-        // If you want to display a message that this was pre-selected
-        const patientName = params.get('patientName');
-        if (patientName) {
-          setSuccessMessage(`Setting up appointment for ${patientName}`);
-        }
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const patientId = params.get('patient');
+
+    if (patientId) {
+      setFormData(prev => ({
+        ...prev,
+        patient: patientId
+      }));
+
+      const patientName = params.get('patientName');
+      if (patientName) {
+        setSuccessMessage(`Setting up appointment for ${patientName}`);
       }
-    }, [location]);
+    }
+  }, [location]);
+
   useEffect(() => {
     const fetchAnalyzedImages = async () => {
-      if (userProfile?.role !== 'patient') return; // Only fetch for patients
-  
+      if (userProfile?.role !== 'patient') return;
+
       try {
         const response = await axios.get(`${API_BASE_URL}/api/user/analyses/`, {
           headers: getAuthHeader(),
@@ -200,20 +196,18 @@ const AppointmentPage: React.FC = () => {
         setError('Failed to load analyzed images.');
       }
     };
-  
+
     if (userProfile) {
       fetchAnalyzedImages();
     }
   }, [userProfile]);
-  // Effect to update available end times based on selected start time
+
   useEffect(() => {
     if (formData.start_time) {
       const startTimeIndex = TIME_OPTIONS.indexOf(formData.start_time);
       if (startTimeIndex !== -1 && startTimeIndex < TIME_OPTIONS.length - 1) {
-        // Set available end times to be after the selected start time
         setAvailableEndTimes(TIME_OPTIONS.slice(startTimeIndex + 1));
-        
-        // Reset end time if it's now invalid
+
         if (formData.end_time && TIME_OPTIONS.indexOf(formData.end_time) <= startTimeIndex) {
           setFormData(prev => ({
             ...prev,
@@ -226,19 +220,17 @@ const AppointmentPage: React.FC = () => {
     }
   }, [formData.start_time]);
 
-  // Filter dentists based on selected visit reason
   useEffect(() => {
     if (formData.detail && formData.detail !== 'Other') {
       const recommendedSpecialization = VISIT_REASON_TO_SPECIALIZATION[formData.detail];
-      
+
       if (recommendedSpecialization) {
         const filtered = dentists.filter(
           dentist => dentist.specialization === recommendedSpecialization
         );
-        
+
         setFilteredDentists(filtered.length > 0 ? filtered : dentists);
-        
-        // Auto-select the first dentist with the recommended specialization if available
+
         if (filtered.length > 0 && formData.dentist === 0) {
           setFormData(prev => ({
             ...prev,
@@ -253,7 +245,6 @@ const AppointmentPage: React.FC = () => {
     }
   }, [formData.detail, dentists]);
 
-  // Effect to check for scheduling conflicts when date, dentist, or time changes
   useEffect(() => {
     if (formData.date && formData.dentist && formData.dentist !== 0) {
       checkAvailability();
@@ -261,16 +252,12 @@ const AppointmentPage: React.FC = () => {
   }, [formData.date, formData.dentist]);
 
   const getAuthToken = () => {
-    // Try to get token from localStorage
     const token = localStorage.getItem('access') || localStorage.getItem('token');
-    
-    // Debug token format
     if (token) {
       console.log('Token:', token);
     } else {
       console.warn('No authentication token found');
     }
-    
     return token;
   };
 
@@ -284,7 +271,6 @@ const AppointmentPage: React.FC = () => {
     };
   };
 
-  // Fetch user profile to determine role
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -294,16 +280,15 @@ const AppointmentPage: React.FC = () => {
           setError('Please log in to continue.');
           return;
         }
-  
+
         console.log('Fetching user profile with token:', token);
         const response = await axios.get(`${API_BASE_URL}/api/user/profile/`, {
           headers: getAuthHeader(),
         });
-  
+
         console.log('User profile response:', response.data);
         setUserProfile(response.data);
-  
-        // Set patient ID for patients
+
         if (response.data.role === 'patient' && response.data.patient?.id) {
           setFormData((prev) => ({
             ...prev,
@@ -330,26 +315,23 @@ const AppointmentPage: React.FC = () => {
         setLoading(false);
       }
     };
-  
+
     fetchUserProfile();
   }, []);
 
-  // Fetch dentists when component mounts
   useEffect(() => {
     const fetchDentists = async () => {
       try {
         setLoading(true);
-        
+
         const response = await axios.get(`${API_BASE_URL}/api/dentists/`, {
           headers: getAuthHeader()
         });
-        
-        // Check if response.data is an array
+
         if (Array.isArray(response.data)) {
           setDentists(response.data);
           setFilteredDentists(response.data);
         } else if (response.data && typeof response.data === 'object') {
-          // If response.data is an object with a results property
           const dentistsArray = response.data.results || [];
           setDentists(Array.isArray(dentistsArray) ? dentistsArray : []);
           setFilteredDentists(Array.isArray(dentistsArray) ? dentistsArray : []);
@@ -359,7 +341,7 @@ const AppointmentPage: React.FC = () => {
           console.error('API response format unexpected:', response.data);
           setError('Received unexpected data format from server');
         }
-        
+
         setLoading(false);
       } catch (err) {
         console.error('Error fetching dentists:', err);
@@ -369,11 +351,10 @@ const AppointmentPage: React.FC = () => {
         setFilteredDentists([]);
       }
     };
-    
+
     fetchDentists();
   }, []);
 
-  // Fetch patients if user is a dentist
   useEffect(() => {
     if (userProfile?.role === 'dentist') {
       const fetchPatients = async () => {
@@ -381,10 +362,9 @@ const AppointmentPage: React.FC = () => {
           const response = await axios.get(`${API_BASE_URL}/api/patients/`, {
             headers: getAuthHeader(),
           });
-  
+
           if (Array.isArray(response.data)) {
             console.log('Fetched patients:', response.data);
-            // Check for duplicate or missing IDs
             const ids = response.data.map((p: Patient) => p.id);
             const uniqueIds = new Set(ids);
             if (ids.length !== uniqueIds.size) {
@@ -415,7 +395,7 @@ const AppointmentPage: React.FC = () => {
           setError('Failed to load patients. Please try again.');
         }
       };
-  
+
       fetchPatients();
     }
   }, [userProfile]);
@@ -423,19 +403,17 @@ const AppointmentPage: React.FC = () => {
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
-    
+
     setFormData((prevData) => ({
       ...prevData,
       [name]: type === 'checkbox' ? checked : value,
     }));
 
-    // Reset schedule view when dentist changes
     if (name === 'dentist') {
       setShowSchedule(false);
       setSchedule([]);
     }
 
-    // Reset available slots when date changes
     if (name === 'date' || name === 'dentist') {
       setShowAvailableSlots(false);
       setAvailableSlots([]);
@@ -451,14 +429,14 @@ const AppointmentPage: React.FC = () => {
     try {
       setLoadingSchedule(true);
       setError(null);
-      
+
       const response = await axios.get(
         `${API_BASE_URL}/api/dentists/${formData.dentist}/schedule/`,
         {
           headers: getAuthHeader()
         }
       );
-      
+
       if (Array.isArray(response.data)) {
         setSchedule(response.data);
       } else if (response.data && typeof response.data === 'object' && response.data.results) {
@@ -467,7 +445,7 @@ const AppointmentPage: React.FC = () => {
         setSchedule([]);
         setError('No schedule information available for this doctor');
       }
-      
+
       setShowSchedule(true);
       setLoadingSchedule(false);
     } catch (err) {
@@ -481,30 +459,28 @@ const AppointmentPage: React.FC = () => {
     if (!formData.date || !formData.dentist || formData.dentist === 0) {
       return;
     }
-    
+
     try {
       setLoading(true);
       setError(null);
-      
-      // Get the day of the week for the selected date
+
       const date = new Date(formData.date);
       const dayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
-      
-      // Get the dentist's schedule for that day
+
       const scheduleResponse = await axios.get(
         `${API_BASE_URL}/api/dentists/${formData.dentist}/schedule/`,
         {
           headers: getAuthHeader()
         }
       );
-      
+
       let daySchedule: DaySchedule | undefined;
       if (Array.isArray(scheduleResponse.data)) {
         daySchedule = scheduleResponse.data.find((s: DaySchedule) => s.day === dayOfWeek);
       } else if (scheduleResponse.data && scheduleResponse.data.results) {
         daySchedule = scheduleResponse.data.results.find((s: DaySchedule) => s.day === dayOfWeek);
       }
-      
+
       if (!daySchedule) {
         setError(`The doctor is not available on ${dayOfWeek}s`);
         setAvailableSlots([]);
@@ -512,8 +488,7 @@ const AppointmentPage: React.FC = () => {
         setLoading(false);
         return;
       }
-      
-      // Get existing appointments for the dentist on that date
+
       const appointmentsResponse = await axios.get(
         `${API_BASE_URL}/api/appointments/`,
         {
@@ -524,23 +499,22 @@ const AppointmentPage: React.FC = () => {
           }
         }
       );
-      
+
       let appointments = [];
       if (Array.isArray(appointmentsResponse.data)) {
         appointments = appointmentsResponse.data;
       } else if (appointmentsResponse.data && appointmentsResponse.data.results) {
         appointments = appointmentsResponse.data.results;
       }
-      
+
       setExistingAppointments(appointments);
-      
-      // Generate available time slots
+
       const availableTimeSlots = generateAvailableTimeSlots(
         daySchedule.start_hour,
         daySchedule.end_hour,
         appointments
       );
-      
+
       setAvailableSlots(availableTimeSlots);
       setShowAvailableSlots(true);
       setLoading(false);
@@ -556,42 +530,34 @@ const AppointmentPage: React.FC = () => {
     endHour: string,
     appointments: Appointment[]
   ): AvailableSlot[] => {
-    // Convert to 24-hour format
     const start = parseInt(startHour, 10);
     const end = parseInt(endHour, 10);
-    
-    // Generate all possible 30-minute slots
+
     const allSlots: AvailableSlot[] = [];
     for (let hour = start; hour < end; hour++) {
-      // Full hour slot
       allSlots.push({
         start: `${hour.toString().padStart(2, '0')}:00`,
         end: `${hour.toString().padStart(2, '0')}:30`
       });
-      
-      // Half hour slot
+
       allSlots.push({
         start: `${hour.toString().padStart(2, '0')}:30`,
         end: `${(hour + 1).toString().padStart(2, '0')}:00`
       });
     }
-    
-    // Filter out slots that overlap with existing appointments
+
     return allSlots.filter(slot => {
       return !appointments.some(appt => {
-        // Extract hour and minute from appointment times
         const apptStart = appt.start_time.split(':');
         const apptEnd = appt.end_time.split(':');
         const slotStart = slot.start.split(':');
         const slotEnd = slot.end.split(':');
-        
-        // Convert to minutes since midnight for easier comparison
+
         const apptStartMinutes = parseInt(apptStart[0]) * 60 + parseInt(apptStart[1]);
         const apptEndMinutes = parseInt(apptEnd[0]) * 60 + parseInt(apptEnd[1]);
         const slotStartMinutes = parseInt(slotStart[0]) * 60 + parseInt(slotStart[1]);
         const slotEndMinutes = parseInt(slotEnd[0]) * 60 + parseInt(slotEnd[1]);
-        
-        // Check for overlap
+
         return (
           (slotStartMinutes >= apptStartMinutes && slotStartMinutes < apptEndMinutes) ||
           (slotEndMinutes > apptStartMinutes && slotEndMinutes <= apptEndMinutes) ||
@@ -612,50 +578,48 @@ const AppointmentPage: React.FC = () => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-  
+
     try {
       setLoading(true);
       setError(null);
-      setSuccessMessage(null);
-  
+
       const token = getAuthToken();
       if (!token) {
         setError('You must be logged in to schedule an appointment.');
         setLoading(false);
         return;
       }
-  
-      // Validate form
+
       if (!formData.dentist || formData.dentist === 0) {
         setError('Please select a doctor');
         setLoading(false);
         return;
       }
-  
+
       if (!formData.start_time || !formData.end_time) {
         setError('Please select both start and end times.');
         setLoading(false);
         return;
       }
-  
+
       const startTimeIndex = TIME_OPTIONS.indexOf(formData.start_time);
       const endTimeIndex = TIME_OPTIONS.indexOf(formData.end_time);
-  
+
       if (startTimeIndex >= endTimeIndex) {
         setError('End time must be after start time.');
         setLoading(false);
         return;
       }
-  
+
       const finalDetail =
         formData.detail === 'Other' ? formData.customDetail : formData.detail;
-  
+
       if (formData.detail === 'Other' && !formData.customDetail.trim()) {
         setError('Please specify the reason for your visit.');
         setLoading(false);
         return;
       }
-  
+
       const appointmentData: any = {
         detail: finalDetail,
         date: formData.date,
@@ -664,10 +628,9 @@ const AppointmentPage: React.FC = () => {
         dentist: Number(formData.dentist),
         analyzed_image_id: formData.analyzed_image_id
           ? Number(formData.analyzed_image_id)
-          : undefined, // Include only if selected
+          : undefined,
       };
-  
-      // Set patient ID based on user role
+
       if (userProfile?.role === 'dentist' && formData.patient) {
         appointmentData.patient = Number(formData.patient);
       } else if (userProfile?.role === 'patient' && userProfile?.patient?.id) {
@@ -677,7 +640,7 @@ const AppointmentPage: React.FC = () => {
         setLoading(false);
         return;
       }
-  
+
       console.log('Submitting appointment data:', appointmentData);
       const response = await axios.post(
         `${API_BASE_URL}/api/appointments/`,
@@ -686,11 +649,10 @@ const AppointmentPage: React.FC = () => {
           headers: getAuthHeader(),
         }
       );
-  
+
       console.log('Appointment response:', response.data);
       setSuccessMessage('Appointment scheduled successfully!');
-  
-      // Reset form
+
       setFormData({
         detail: '',
         customDetail: '',
@@ -701,7 +663,7 @@ const AppointmentPage: React.FC = () => {
         agreeToPrivacy: false,
         analyzed_image_id: '',
       });
-  
+
       setShowSchedule(false);
       setShowAvailableSlots(false);
     } catch (err: any) {
@@ -721,7 +683,10 @@ const AppointmentPage: React.FC = () => {
     }
   };
 
-  // Format time for display (24hr -> 12hr format)
+  const closeSuccessModal = () => {
+    setSuccessMessage(null);
+  };
+
   const formatTime = (time: string): string => {
     const [hour, minute] = time.split(':');
     const hourNum = parseInt(hour, 10);
@@ -730,11 +695,10 @@ const AppointmentPage: React.FC = () => {
     return `${hour12}:${minute} ${period}`;
   };
 
-  // Get specialization label from value
   const getSpecializationLabel = (value: string): string => {
     const specialization = specializations.find(spec => spec.value === value);
     return specialization ? specialization.label : value;
-  }; 
+  };
 
   return (
     <div className="appointment-page">
@@ -743,7 +707,7 @@ const AppointmentPage: React.FC = () => {
           <div className="appointment-image">
             <img src={appointment_img} alt="Happy dental patient" />
           </div>
-  
+
           <div className="appointment-form-container">
             <div className="appointment-title">
               <h1>
@@ -751,19 +715,15 @@ const AppointmentPage: React.FC = () => {
               </h1>
               <h2>Consult with our Doctor</h2>
             </div>
-  
+
             {!getAuthToken() && (
               <div className="error-message">
                 You need to login before making an appointment.
               </div>
             )}
-  
-            {successMessage && (
-              <div className="success-message">{successMessage}</div>
-            )}
-  
+
             {error && <div className="error-message">{error}</div>}
-  
+
             <form className="appointment-form" onSubmit={handleSubmit}>
               <div className="form-group">
                 <label>Reason for Visit</label>
@@ -854,6 +814,7 @@ const AppointmentPage: React.FC = () => {
                   )}
                 </div>
               </div>
+
               {showSchedule && (
                 <div className="schedule-container">
                   <h3>Doctor's Schedule</h3>
@@ -940,9 +901,6 @@ const AppointmentPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Rest of the form remains unchanged */}
-            
-
               <div className="form-row">
                 <div className="form-group time-selection">
                   <label>Select Time</label>
@@ -1022,12 +980,25 @@ const AppointmentPage: React.FC = () => {
                 </div>
               </div>
             </form>
-           
+
+            {successMessage && (
+              <div className="modal-overlay">
+                <div className="modal-content">
+                  <h2>Success</h2>
+                  <p>{successMessage}</p>
+                  <button className="modal-close-btn" onClick={closeSuccessModal}>
+                    OK
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+    
     </div>
   );
 }
-  
+
 export default AppointmentPage;

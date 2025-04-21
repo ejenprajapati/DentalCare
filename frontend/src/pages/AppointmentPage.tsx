@@ -786,7 +786,7 @@ const AppointmentPage: React.FC = () => {
                   VISIT_REASON_TO_SPECIALIZATION[formData.detail] && (
                     <div className="recommendation-note">
                       <small>
-                        Recommended:{" "}
+                        Recommended Dentist:{" "}
                         {getSpecializationLabel(
                           VISIT_REASON_TO_SPECIALIZATION[formData.detail]
                         )}
@@ -794,7 +794,7 @@ const AppointmentPage: React.FC = () => {
                     </div>
                   )}
               </div>
-  
+
               {formData.detail === "Other" && (
                 <div className="form-group">
                   <label>Please specify your reason</label>
@@ -809,63 +809,7 @@ const AppointmentPage: React.FC = () => {
                   ></textarea>
                 </div>
               )}
-  
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Date</label>
-                  <input
-                    type="date"
-                    name="date"
-                    className="form-control"
-                    value={formData.date}
-                    onChange={handleChange}
-                    min={new Date().toISOString().split("T")[0]}
-                    required
-                  />
-                </div>
-              </div>
-              {userProfile?.role === "patient" && (
-              <div className="form-group">
-                <label>Analyzed Image (Optional)</label>
-                <select
-                  name="analyzed_image_id"
-                  className="form-control"
-                  value={formData.analyzed_image_id}
-                  onChange={handleChange}
-                >
-                  <option value="">Select an analyzed image (optional)</option>
-                  {analyzedImages.map((image) => (
-                    <option key={image.id} value={image.id}>
-                      Image analyzed on {new Date(image.created_at).toLocaleString()}
-                    </option>
-                  ))}
-                </select>
-              </div>
-               )}
-  
-              {userProfile?.role === "dentist" && (
-              <div className="form-group">
-                <label>Patient</label>
-                <select
-                  name="patient"
-                  className="form-control"
-                  value={formData.patient === undefined ? '' : formData.patient}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Select Patient</option>
-                  {patients.map((patient, index) => (
-                    <option
-                      key={patient.id ?? `patient-${index}`} // Fallback to index if id is missing
-                      value={patient.id}
-                    >
-                      {patient.user.first_name} {patient.user.last_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              )}
-  
+
               <div className="form-group">
                 <label>Doctor</label>
                 <div className="dentist-selector">
@@ -910,7 +854,6 @@ const AppointmentPage: React.FC = () => {
                   )}
                 </div>
               </div>
-  
               {showSchedule && (
                 <div className="schedule-container">
                   <h3>Doctor's Schedule</h3>
@@ -939,7 +882,67 @@ const AppointmentPage: React.FC = () => {
                   )}
                 </div>
               )}
-  
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Date</label>
+                  <input
+                    type="date"
+                    name="date"
+                    className="form-control"
+                    value={formData.date}
+                    onChange={handleChange}
+                    min={new Date().toISOString().split("T")[0]}
+                    required
+                  />
+                </div>
+              </div>
+
+              {userProfile?.role === "patient" && (
+                <div className="form-group">
+                  <label>Analyzed Image (Optional)</label>
+                  <select
+                    name="analyzed_image_id"
+                    className="form-control"
+                    value={formData.analyzed_image_id}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select an analyzed image (optional)</option>
+                    {analyzedImages.map((image) => (
+                      <option key={image.id} value={image.id}>
+                        Image analyzed on {new Date(image.created_at).toLocaleString()}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {userProfile?.role === "dentist" && (
+                <div className="form-group">
+                  <label>Patient</label>
+                  <select
+                    name="patient"
+                    className="form-control"
+                    value={formData.patient === undefined ? '' : formData.patient}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Select Patient</option>
+                    {patients.map((patient, index) => (
+                      <option
+                        key={patient.id ?? `patient-${index}`}
+                        value={patient.id}
+                      >
+                        {patient.user.first_name} {patient.user.last_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Rest of the form remains unchanged */}
+            
+
               <div className="form-row">
                 <div className="form-group time-selection">
                   <label>Select Time</label>
@@ -957,7 +960,7 @@ const AppointmentPage: React.FC = () => {
                       Check Available Slots
                     </button>
                   </div>
-  
+
                   {showAvailableSlots && (
                     <div className="available-slots-container">
                       <h3>Available Time Slots</h3>
@@ -982,7 +985,7 @@ const AppointmentPage: React.FC = () => {
                       )}
                     </div>
                   )}
-  
+
                   {formData.start_time && formData.end_time && (
                     <div className="selected-time">
                       <p>
@@ -994,7 +997,7 @@ const AppointmentPage: React.FC = () => {
                       </p>
                     </div>
                   )}
-  
+
                   <div className="privacy-checkbox">
                     <input
                       type="checkbox"
@@ -1008,7 +1011,7 @@ const AppointmentPage: React.FC = () => {
                       You agree to our friendly privacy policy.
                     </label>
                   </div>
-  
+
                   <button
                     type="submit"
                     className="submit-btn"
@@ -1019,6 +1022,7 @@ const AppointmentPage: React.FC = () => {
                 </div>
               </div>
             </form>
+           
           </div>
         </div>
       </div>

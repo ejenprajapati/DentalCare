@@ -1,10 +1,20 @@
-// components/Header.js
-
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.png';
+
 function Header() {
   const location = useLocation();
-  
+  const navigate = useNavigate();
+  const isLoggedIn = !!localStorage.getItem('access'); // Check if token exists in localStorage
+
+  const handleAuthAction = () => {
+    if (isLoggedIn) {
+      localStorage.clear(); // Clear localStorage on logout, as per App.js
+      navigate('/login'); // Redirect to login page
+    } else {
+      navigate('/login'); // Redirect to login page
+    }
+  };
+
   return (
     <header className="header">
       <div className="container">
@@ -68,11 +78,17 @@ function Header() {
           </ul>
         </nav>
         
-        <div className="auth-buttons">
+        <div className="auth-buttons flex gap-2">
           <Link to="/ai-checkup" className="ai-checkup-btn">
             <img src="/icons/ai-icon.svg" alt="AI" width="20" height="20" />
             AI Checkup
           </Link>
+          <button 
+            onClick={handleAuthAction}
+            className="auth-btn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            {isLoggedIn ? 'Logout' : 'Login'}
+          </button>
         </div>
       </div>
     </header>

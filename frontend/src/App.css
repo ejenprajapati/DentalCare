@@ -118,7 +118,29 @@ body {
   display: flex;
   gap: 10px;
 }
+.auth-btn {
+  background-color: #2980b9;
+  color: var(--white);
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
 
+.auth-btn.logout {
+  background-color: hsl(from var(--primary-color) h s 0.8); /* Slightly darker shade for logout */
+}
+
+.auth-btn:hover {
+  background-color: hsl(from var(--primary-color) h s 0.9); /* Lighter shade on hover */
+}
 /* Hero Section */
 .hero-section {
   padding: 60px 0;
@@ -2735,24 +2757,30 @@ body {
   min-height: 100vh;
 }
 
-/* Header styles */
+/* Header styles - Centered title and repositioned counter */
 .patients-header {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2.5rem;
+  position: relative;
 }
 
 .patients-header h1 {
   color: #2c3e50;
   font-size: 1.75rem;
   font-weight: 600;
+  margin-bottom: 0.75rem;
+  text-align: center;
 }
 
 .total-appointments {
+  position: absolute;
+  right: 0;
+  top: 0;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: flex-end;
 }
 
 .total-appointments span {
@@ -2766,59 +2794,34 @@ body {
   color: #2980b9;
 }
 
-/* Controls section */
-.patients-controls {
+/* Centered search and sort */
+.search-and-sort {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.controls-left {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.grid-view-btn, .print-btn, .filters-btn {
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 0.5rem;
-  display: flex;
+  justify-content: center;
   align-items: center;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.grid-view-btn:hover, .print-btn:hover, .filters-btn:hover {
-  background-color: #f5f8fa;
-}
-
-.filters-btn {
-  display: flex;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .search-container {
-  flex-grow: 1;
-  max-width: 400px;
+  width: 100%;
+  max-width: 300px;
 }
 
 .search-input {
   width: 100%;
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 0.9rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 /* Sort controls */
 .sort-controls {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 1rem;
 }
 
 .sort-controls span {
@@ -2827,18 +2830,19 @@ body {
 }
 
 .sort-dropdown {
-  padding: 0.25rem 0.5rem;
+  padding: 0.5rem 1rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   background-color: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 /* Table styles */
 .patients-table {
   background-color: white;
   border-radius: 8px;
- 
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  overflow: hidden;
 }
 
 .table-header {
@@ -2941,7 +2945,7 @@ body {
   color: #7f8c8d;
 }
 
-/* Treatment dropdown styles - fixed */
+/* Treatment dropdown styles */
 .treatment-control {
   position: relative;
   width: 100%;
@@ -3011,26 +3015,4 @@ body {
   background-color: #e1f0fa;
   color: #2980b9;
   font-weight: 500;
-}
-
-/* Icons */
-.grid-icon, .print-icon, .filter-icon {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  background-size: contain;
-  background-repeat: no-repeat;
-  margin-right: 0.25rem;
-}
-
-.grid-icon {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235c6d7e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='7' height='7'%3E%3C/rect%3E%3Crect x='14' y='3' width='7' height='7'%3E%3C/rect%3E%3Crect x='14' y='14' width='7' height='7'%3E%3C/rect%3E%3Crect x='3' y='14' width='7' height='7'%3E%3C/rect%3E%3C/svg%3E");
-}
-
-.print-icon {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235c6d7e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 6 2 18 2 18 9'%3E%3C/polyline%3E%3Cpath d='M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2'%3E%3C/path%3E%3Crect x='6' y='14' width='12' height='8'%3E%3C/rect%3E%3C/svg%3E");
-}
-
-.filter-icon {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235c6d7e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3'%3E%3C/polygon%3E%3C/svg%3E");
 }

@@ -2,8 +2,11 @@
 import { Link } from 'react-router-dom';
 import aiRobot from '../assets/ai-robot.png';
 import dentistImage from '../assets/dentist_pic.jpg';
+import { useNavigate } from 'react-router-dom';
+
 
 function HomePage() {
+  const navigate = useNavigate();
   return (
     <div className="home-page">
       {/* Hero Section */}
@@ -19,7 +22,7 @@ function HomePage() {
               smile.
             </p>
             <div className="hero-buttons">
-              <Link to="/ai-analysis" className="btn btn-primary">Get AI Analysis</Link>
+              <Link to="/ai-checkup" className="btn btn-primary">Get AI Analysis</Link>
               <div className="emergency-contact">
                 <div className="phone-icon">
                   <i className="fas fa-phone"></i>
@@ -100,7 +103,7 @@ function HomePage() {
               <li>Enrollment is quick and easy</li>
             </ul>
             
-            <button className="btn btn-primary">Book an appointment</button>
+            <button className="btn btn-primary"  onClick={() => navigate('/appointment')}>Book an appointment</button>
           </div>
         </div>
       </section>

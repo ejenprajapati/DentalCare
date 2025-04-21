@@ -95,8 +95,6 @@ const PatientsPage: React.FC = () => {
             'Authorization': `Bearer ${token}`
           }
         });
-
-        console.log('Fetched appointments:', appointmentsResponse.data);
         
         // Fetch patients to get their details
         const patientsResponse = await axios.get(`${BASE_URL}/api/patients/`, {
@@ -104,8 +102,6 @@ const PatientsPage: React.FC = () => {
             'Authorization': `Bearer ${token}`
           }
         });
-        
-        console.log('Fetched patients:', patientsResponse.data);
         
         // Create a map of patient IDs to patient details for quick lookups
         const patientMap = new Map();
@@ -168,7 +164,6 @@ const PatientsPage: React.FC = () => {
   };
 
   const handleSetAppointment = (patientId: number) => {
-    // Try with just /appointments instead of /appointments/new
     navigate(`/appointment?patient=${patientId}`);
   };
 
@@ -285,28 +280,10 @@ const PatientsPage: React.FC = () => {
     <div className="patients-container">
       <div className="patients-header">
         <h1>APPOINTMENTS</h1>
-        <div className="total-appointments">
-          <span>Total appointments</span>
-          <div className="appointments-count">{appointmentRows.length}</div>
-        </div>
+        
       </div>
       
-      <div className="patients-controls">
-        <div className="controls-left">
-          <button className="grid-view-btn">
-            <i className="grid-icon"></i>
-          </button>
-          <button className="print-btn">
-            <i className="print-icon"></i>
-          </button>
-          <div className="filters-dropdown">
-            <button className="filters-btn">
-              <i className="filter-icon"></i>
-              Filters
-            </button>
-          </div>
-        </div>
-        
+      <div className="search-and-sort">
         <div className="search-container">
           <input 
             type="text" 
@@ -316,18 +293,18 @@ const PatientsPage: React.FC = () => {
             className="search-input"
           />
         </div>
-      </div>
-      
-      <div className="sort-controls">
-        <span>Sort by:</span>
-        <select 
-          value={sortBy} 
-          onChange={(e) => setSortBy(e.target.value)}
-          className="sort-dropdown"
-        >
-          <option value="date">Appointment Date</option>
-          <option value="patient">Patient Name</option>
-        </select>
+        
+        <div className="sort-controls">
+          <span>Sort by:</span>
+          <select 
+            value={sortBy} 
+            onChange={(e) => setSortBy(e.target.value)}
+            className="sort-dropdown"
+          >
+            <option value="date">Appointment Date</option>
+            <option value="patient">Patient Name</option>
+          </select>
+        </div>
       </div>
       
       <div className="patients-table">
@@ -377,12 +354,12 @@ const PatientsPage: React.FC = () => {
                 )}
               </div>
               <div className="cell">
-              <button 
-                className="set-appointment-btn"
-                onClick={() => handleSetAppointment(row.patientId)}
+                <button 
+                  className="set-appointment-btn"
+                  onClick={() => handleSetAppointment(row.patientId)}
                 >
-                Set Appointment
-                 </button>
+                  Set Appointment
+                </button>
               </div>
             </div>
           ))

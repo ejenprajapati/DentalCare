@@ -13,10 +13,18 @@ interface Analysis {
   original_image: {
     id: number;
     image: string;
+    image_url: string;
   };
   analyzed_image_url: string;
   created_at: string;
   diseases: Disease[];
+  total_conditions: number;
+  calculus_count: number;
+  caries_count: number;
+  gingivitis_count: number;
+  hypodontia_count: number;
+  tooth_discolation_count: number;
+  ulcer_count: number;
 }
 
 const AnalysisHistory: React.FC = () => {
@@ -54,25 +62,22 @@ const AnalysisHistory: React.FC = () => {
     fetchAnalysisHistory();
   }, [navigate]);
 
-  const viewAnalysisDetails = (analysis: Analysis) => {
+  // Inside the viewAnalysisDetails function in AnalysisHistory.tsx
+const viewAnalysisDetails = (analysis: Analysis) => {
     try {
       console.log('Viewing analysis details for:', analysis.id);
       
-      // Make sure we have the image data
-      const originalImage = analysis.original_image?.image || '';
-      const analyzedImage = analysis.analyzed_image_url || '';
-      
-      // Store the analysis data in sessionStorage in the format your Results component expects
+      // Use the getImageUrl function to ensure URLs are properly formatted
       const analysisData = {
-        originalImage: originalImage, // No need to add the base URL here since Results.tsx handles it
-        analyzedImage: analyzedImage, // No need to add the base URL here since Results.tsx handles it
-        totalConditionsDetected: analysis.diseases.length,
-        calculusCount: analysis.diseases.filter(d => d.name === 'Calculus').length,
-        cariesCount: analysis.diseases.filter(d => d.name === 'Caries').length,
-        gingivitisCount: analysis.diseases.filter(d => d.name === 'Gingivitis').length,
-        hypodontiaCount: analysis.diseases.filter(d => d.name === 'Hypodontia').length,
-        toothDiscolationCount: analysis.diseases.filter(d => d.name === 'Tooth discolation').length || analysis.diseases.filter(d => d.name === 'Tooth dislocation').length,
-        ulcerCount: analysis.diseases.filter(d => d.name === 'Ulcer').length,
+        originalImage: getImageUrl(analysis.original_image?.image_url || analysis.original_image?.image),
+        analyzedImage: getImageUrl(analysis.analyzed_image_url),
+        totalConditionsDetected: analysis.total_conditions,
+        calculusCount: analysis.calculus_count,
+        cariesCount: analysis.caries_count,
+        gingivitisCount: analysis.gingivitis_count,
+        hypodontiaCount: analysis.hypodontia_count,
+        toothDiscolationCount: analysis.tooth_discolation_count,
+        ulcerCount: analysis.ulcer_count,
         analysisId: analysis.id
       };
       
@@ -128,7 +133,7 @@ const AnalysisHistory: React.FC = () => {
             <div className="analysis-item" key={analysis.id}>
               <div className="analysis-thumbnail">
                 <img 
-                  src={getImageUrl(analysis.original_image?.image)} 
+                  src={getImageUrl(analysis.original_image?.image_url || analysis.original_image?.image)} 
                   alt="Dental scan" 
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
@@ -141,7 +146,7 @@ const AnalysisHistory: React.FC = () => {
               <div className="analysis-info">
                 <h3>Analysis #{analysis.id}</h3>
                 <p>Date: {new Date(analysis.created_at).toLocaleString()}</p>
-                <p>Conditions detected: {analysis.diseases.length}</p>
+                <p>Conditions detected: {analysis.total_conditions}</p>
                 <button 
                   className="btn view-btn"
                   onClick={() => viewAnalysisDetails(analysis)}

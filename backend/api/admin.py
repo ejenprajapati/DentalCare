@@ -80,8 +80,10 @@ class PatientAdmin(admin.ModelAdmin):
 
 @admin.register(DentalImage)
 class DentalImageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'image_type', 'uploaded_at')
-    list_filter = ('image_type', 'uploaded_at')
+    list_display = ('id', 'image_url', 'uploaded_at')
+    list_filter = ('uploaded_at',)
+
+
 
 @admin.register(Disease)
 class DiseaseAdmin(admin.ModelAdmin):
@@ -94,10 +96,14 @@ class ImageClassificationInline(admin.TabularInline):
 
 @admin.register(ImageAnalysis)
 class ImageAnalysisAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'original_image', 'analyzed_image_url', 'created_at')
+    list_display = ('id', 'user', 'original_image', 'analyzed_image_url', 
+                   'total_conditions', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('user__username', 'user__email')
     inlines = [ImageClassificationInline]
+    readonly_fields = ('total_conditions', 'calculus_count', 'caries_count', 
+                       'gingivitis_count', 'hypodontia_count', 'tooth_discolation_count', 
+                       'ulcer_count')
 
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):

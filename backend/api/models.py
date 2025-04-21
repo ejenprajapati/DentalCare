@@ -116,13 +116,13 @@ class Patient(models.Model):
         return f"{self.user.username} - Patient"
 
 
-class DentalImage(models.Model):
-    image = models.ImageField(upload_to='dental_images/')
-    image_type = models.CharField(max_length=10, default="dental")
-    uploaded_at = models.DateTimeField(auto_now_add=True)
+# class DentalImage(models.Model):
+#     image = models.ImageField(upload_to='dental_images/')
+#     image_type = models.CharField(max_length=10, default="dental")
+#     uploaded_at = models.DateTimeField(auto_now_add=True)
     
-    def __str__(self):
-        return f"Dental Image {self.id} - {self.image_type}"
+#     def __str__(self):
+#         return f"Dental Image {self.id} - {self.image_type}"
 
 
 class Disease(models.Model):
@@ -133,12 +133,43 @@ class Disease(models.Model):
         return self.name
 
 
+# class ImageAnalysis(models.Model):
+#     user = models.ForeignKey('User', on_delete=models.CASCADE)
+#     original_image = models.ForeignKey(DentalImage, on_delete=models.CASCADE)
+#     analyzed_image_url = models.CharField(max_length=255, default= "none")
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     diseases = models.ManyToManyField(Disease, through='ImageClassification')
+    
+#     def __str__(self):
+#         return f"Analysis {self.id} for {self.user.username}"
+    
+#     class Meta:
+#         verbose_name_plural = "Image Analyses"
+
+
+class DentalImage(models.Model):
+    image = models.ImageField(upload_to='dental_images/')
+    image_url = models.CharField(max_length=255, default="none")  # Add URL field instead of image_type
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Dental Image {self.id}"
+
 class ImageAnalysis(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE)
     original_image = models.ForeignKey(DentalImage, on_delete=models.CASCADE)
-    analyzed_image_url = models.CharField(max_length=255, default= "none")
+    analyzed_image_url = models.CharField(max_length=255, default="none")
     created_at = models.DateTimeField(auto_now_add=True)
     diseases = models.ManyToManyField(Disease, through='ImageClassification')
+    
+    # New fields for disease counts
+    total_conditions = models.IntegerField(default=0)
+    calculus_count = models.IntegerField(default=0)
+    caries_count = models.IntegerField(default=0)
+    gingivitis_count = models.IntegerField(default=0)
+    hypodontia_count = models.IntegerField(default=0)
+    tooth_discolation_count = models.IntegerField(default=0)
+    ulcer_count = models.IntegerField(default=0)
     
     def __str__(self):
         return f"Analysis {self.id} for {self.user.username}"

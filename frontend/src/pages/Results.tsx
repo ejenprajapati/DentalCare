@@ -51,14 +51,10 @@ const Results: React.FC = () => {
     ulcer: "#FFA500" // Orange
   };
   
-  // Check if images are base64 or URLs and handle accordingly
-  const originalImgSrc = results.originalImage.startsWith('data:') 
-    ? results.originalImage 
-    : `http://127.0.0.1:8000${results.originalImage}`;
-    
-  const analyzedImgSrc = results.analyzedImage.startsWith('data:') 
-    ? results.analyzedImage 
-    : `http://127.0.0.1:8000${results.analyzedImage}`;
+  // The images should already be properly formatted URLs from AnalysisHistory
+  // so we don't need to modify them here
+  const originalImgSrc = results.originalImage;
+  const analyzedImgSrc = results.analyzedImage;
   
   return (
     <div className="container">
@@ -75,11 +71,29 @@ const Results: React.FC = () => {
         <div className="image-comparison">
           <div className="image-box">
             <h3>Original Image</h3>
-            <img src={originalImgSrc} alt="Original Image" />
+            <img 
+              src={originalImgSrc} 
+              alt="Original Image" 
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.onerror = null;
+                target.src = "/placeholder-dental.png";
+                console.log('Original image failed to load:', originalImgSrc);
+              }}
+            />
           </div>
           <div className="image-box">
             <h3>Analyzed Image</h3>
-            <img src={analyzedImgSrc} alt="Analyzed Image" />
+            <img 
+              src={analyzedImgSrc} 
+              alt="Analyzed Image" 
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.onerror = null;
+                target.src = "/placeholder-dental.png";
+                console.log('Analyzed image failed to load:', analyzedImgSrc);
+              }}
+            />
           </div>
         </div>
         

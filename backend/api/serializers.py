@@ -198,19 +198,24 @@ class RegisterPatientSerializer(serializers.ModelSerializer):
 class DentalImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = DentalImage
-        fields = ['id', 'image', 'image_type', 'uploaded_at']
+        fields = ['id', 'image', 'image_url', 'uploaded_at']
 
 class DiseaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Disease
         fields = ['id', 'name', 'description']
 
+# Update in serializers.py
 class ImageAnalysisSerializer(serializers.ModelSerializer):
     diseases = DiseaseSerializer(many=True, read_only=True)
+    original_image = DentalImageSerializer(read_only=True)
     
     class Meta:
         model = ImageAnalysis
-        fields = ['id', 'user', 'original_image', 'analyzed_image_url', 'created_at', 'diseases']
+        fields = ['id', 'user', 'original_image', 'analyzed_image_url', 'created_at', 
+                  'diseases', 'total_conditions', 'calculus_count', 'caries_count', 
+                  'gingivitis_count', 'hypodontia_count', 'tooth_discolation_count', 
+                  'ulcer_count']
 
 # api/serializers.py
 class AppointmentSerializer(serializers.ModelSerializer):

@@ -226,7 +226,6 @@ class WorkScheduleViewSet(viewsets.ModelViewSet):
 
 class AnalyzeImageView(APIView):
     parser_classes = (MultiPartParser, FormParser)
-    # We should require authentication for saving user-specific data
     permission_classes = [IsAuthenticated]
     
     def post(self, request, *args, **kwargs):
@@ -240,11 +239,13 @@ class AnalyzeImageView(APIView):
         print("Processing uploaded image")
         
         try:
-            # Save the original image to our database
-            dental_image = DentalImage.objects.create(
-                image=image_file,
-                image_type='dental'
+            # Save the original image to our database with URL
+            original_dental_image = DentalImage.objects.create(
+                image=image_file
             )
+            # Update the image_url after save to get the correct URL
+            original_dental_image.image_url = original_dental_image.image.url
+            original_dental_image.save()
             
             # Save uploaded image to temporary file
             with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_file:
@@ -325,17 +326,30 @@ class AnalyzeImageView(APIView):
             with open(annotated_img_path, 'rb') as f:
                 annotated_image_name = f"analyzed_{image_file.name}"
                 # Save the annotated image to the DentalImage model
-                dental_image = DentalImage.objects.create(
-                    image=ContentFile(f.read(), name=annotated_image_name),
-                    image_type='dental'
+                analyzed_dental_image = DentalImage.objects.create(
+                    image=ContentFile(f.read(), name=annotated_image_name)
                 )
+                # Update the image_url
+                analyzed_dental_image.image_url = analyzed_dental_image.image.url
+                analyzed_dental_image.save()
             
-                # Create an ImageAnalysis record
+                # Calculate total conditions detected
+                total_conditions = sum(class_counts.values())
+                
+                # Create an ImageAnalysis record with disease counts
                 analysis = ImageAnalysis.objects.create(
                     user=request.user,
-                    original_image=dental_image,
-                    analyzed_image_url=dental_image.image.url
-                 )
+                    original_image=original_dental_image,
+                    analyzed_image_url=analyzed_dental_image.image.url,
+                    total_conditions=total_conditions,
+                    calculus_count=class_counts["calculus"],
+                    caries_count=class_counts["caries"],
+                    gingivitis_count=class_counts["gingivitis"],
+                    hypodontia_count=class_counts["hypodontia"],
+                    tooth_discolation_count=class_counts["tooth_discolation"],
+                    ulcer_count=class_counts["ulcer"]
+                )
+                
                 # Get or create disease records for each detected condition
                 for disease_name, count in class_counts.items():
                     if count > 0:
@@ -363,7 +377,7 @@ class AnalyzeImageView(APIView):
             response_data = {
                 'originalImage': f"data:image/jpeg;base64,{original_img_base64}",
                 'analyzedImage': f"data:image/jpeg;base64,{analyzed_img_base64}",
-                'totalConditionsDetected': sum(class_counts.values()),
+                'totalConditionsDetected': total_conditions,
                 'analysisId': analysis.id  # Include the analysis ID for future reference
             }
             

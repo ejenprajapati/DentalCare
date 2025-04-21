@@ -2592,3 +2592,167 @@ body {
 .save-button:hover {
   background-color: #1565c0;
 }
+
+
+/* General page styling */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Roboto', Arial, sans-serif;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.left-logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  height: 40px;
+  margin-right: 12px;
+}
+
+.left-logo h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #0056b3;
+  margin: 0;
+}
+
+.page-title {
+  font-size: 28px;
+  margin-bottom: 30px;
+  color: #333;
+  text-align: center;
+}
+
+/* Loading state */
+.loading {
+  text-align: center;
+  font-size: 18px;
+  margin-top: 40px;
+  color: #666;
+}
+
+/* No records message */
+.no-records {
+  text-align: center;
+  padding: 40px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.no-records p {
+  font-size: 18px;
+  margin-bottom: 20px;
+  color: #666;
+}
+
+/* Analysis history cards container */
+.analysis-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
+}
+
+/* Analysis card styling */
+.analysis-item {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.analysis-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.analysis-thumbnail {
+  height: 200px;
+  overflow: hidden;
+  border-bottom: 1px solid #eee;
+}
+
+.analysis-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s;
+}
+
+.analysis-item:hover .analysis-thumbnail img {
+  transform: scale(1.05);
+}
+
+.analysis-info {
+  padding: 20px;
+}
+
+.analysis-info h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 18px;
+  color: #333;
+}
+
+.analysis-info p {
+  color: #666;
+  margin: 8px 0;
+}
+
+/* Button styling */
+.btn {
+  background-color: #0056b3;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #003d7a;
+}
+
+.view-btn {
+  width: 100%;
+  margin-top: 15px;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.back-btn {
+  background-color: #28a745;
+}
+
+.back-btn:hover {
+  background-color: #218838;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .analysis-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .analysis-item {
+    max-width: 100%;
+  }
+}

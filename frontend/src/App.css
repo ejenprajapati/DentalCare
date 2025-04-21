@@ -2727,3 +2727,310 @@ body {
     max-width: 100%;
   }
 }
+
+/* patient-page */
+.patients-container {
+  padding: 1rem 2rem;
+  background-color: #e6eaeb;
+  min-height: 100vh;
+}
+
+/* Header styles */
+.patients-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.patients-header h1 {
+  color: #2c3e50;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.total-appointments {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.total-appointments span {
+  color: #5c6d7e;
+  font-size: 0.9rem;
+}
+
+.appointments-count {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #2980b9;
+}
+
+/* Controls section */
+.patients-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.controls-left {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.grid-view-btn, .print-btn, .filters-btn {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.grid-view-btn:hover, .print-btn:hover, .filters-btn:hover {
+  background-color: #f5f8fa;
+}
+
+.filters-btn {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+}
+
+.search-container {
+  flex-grow: 1;
+  max-width: 400px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+/* Sort controls */
+.sort-controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.sort-controls span {
+  color: #5c6d7e;
+  font-size: 0.9rem;
+}
+
+.sort-dropdown {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+}
+
+/* Table styles */
+.patients-table {
+  background-color: white;
+  border-radius: 8px;
+ 
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.table-header {
+  display: flex;
+  background-color: #f9f9f9;
+  padding: 1rem 0.5rem;
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom: 1px solid #eee;
+}
+
+.table-row {
+  display: flex;
+  padding: 1rem 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.table-row:hover {
+  background-color: #f5f8fa;
+}
+
+.cell {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+}
+
+.checkbox-cell {
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.patient-info-header {
+  flex: 1.5;
+}
+
+.patient-info {
+  flex: 1.5;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.patient-name {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.patient-email {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+}
+
+/* "Set Appointment" button */
+.set-appointment-btn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.set-appointment-btn:hover {
+  background-color: #2980b9;
+}
+
+/* "View Image" button */
+.view-file-btn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.view-file-btn:hover {
+  background-color: #2980b9;
+}
+
+.no-appointments {
+  padding: 2rem;
+  text-align: center;
+  color: #7f8c8d;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.2rem;
+  color: #7f8c8d;
+}
+
+/* Treatment dropdown styles - fixed */
+.treatment-control {
+  position: relative;
+  width: 100%;
+}
+
+.treatment-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0;
+  width: 100%;
+}
+
+.edit-btn {
+  background-color: #f1f1f1;
+  border: none;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-left: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.edit-btn:hover {
+  background-color: #e4e4e4;
+}
+
+.treatment-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 10;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  width: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 0.25rem;
+}
+
+.treatment-option {
+  border-bottom: 1px solid #eee;
+}
+
+.treatment-option:last-child {
+  border-bottom: none;
+}
+
+.option-btn {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.option-btn:hover {
+  background-color: #f5f8fa;
+}
+
+.option-btn.selected {
+  background-color: #e1f0fa;
+  color: #2980b9;
+  font-weight: 500;
+}
+
+/* Icons */
+.grid-icon, .print-icon, .filter-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin-right: 0.25rem;
+}
+
+.grid-icon {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235c6d7e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='7' height='7'%3E%3C/rect%3E%3Crect x='14' y='3' width='7' height='7'%3E%3C/rect%3E%3Crect x='14' y='14' width='7' height='7'%3E%3C/rect%3E%3Crect x='3' y='14' width='7' height='7'%3E%3C/rect%3E%3C/svg%3E");
+}
+
+.print-icon {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235c6d7e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 6 2 18 2 18 9'%3E%3C/polyline%3E%3Cpath d='M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2'%3E%3C/path%3E%3Crect x='6' y='14' width='12' height='8'%3E%3C/rect%3E%3C/svg%3E");
+}
+
+.filter-icon {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235c6d7e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3'%3E%3C/polygon%3E%3C/svg%3E");
+}

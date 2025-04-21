@@ -107,7 +107,7 @@ class ImageAnalysisAdmin(admin.ModelAdmin):
 
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'patient', 'dentist', 'detail','date', 'start_time', 'end_time', 'approved')
+    list_display = ('id', 'patient', 'dentist', 'detail','date', 'start_time', 'end_time', 'treatment','approved', 'analyzed_image_id')
     list_filter = ('approved', 'date')
     search_fields = ('patient__user__username', 'dentist__user__username')
 

@@ -1,22 +1,3 @@
-#api/serializers.py
-# from rest_framework import serializers
-# from django.contrib.auth.models import User
-# from .models import Blog
-
-# class UserSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model= User
-#         fields=['id','username','email','password']
-#         extra_kwargs={"password":{"write_only": True}}
-        
-#     def create(self, validated_data):
-#         user= User.objects.create_user(**validated_data)
-#         return user
-# class BlogSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model= Blog
-#         fields =["id","title", "content", "created_at", "author"]
-#         extra_kwargs={"author":{"read_only": True}}
 
 # api/serializers.py
 from rest_framework import serializers
@@ -62,13 +43,77 @@ class DentistSerializer(serializers.ModelSerializer):
         model = Dentist
         fields = ['user', 'specialization', 'experience', 'qualification']
 
+class DentalImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DentalImage
+        fields = ['id', 'image', 'image_url', 'uploaded_at']
+
+class DiseaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Disease
+        fields = ['id', 'name', 'description']
+
+# Update in serializers.py
+class ImageAnalysisSerializer(serializers.ModelSerializer):
+    diseases = DiseaseSerializer(many=True, read_only=True)
+    original_image = DentalImageSerializer(read_only=True)
+    
+    class Meta:
+        model = ImageAnalysis
+        fields = ['id', 'user', 'original_image', 'analyzed_image_url', 'created_at', 
+                  'diseases', 'total_conditions', 'calculus_count', 'caries_count', 
+                  'gingivitis_count', 'hypodontia_count', 'tooth_discolation_count', 
+                  'ulcer_count']
+
+
+
+class AppointmentSerializer(serializers.ModelSerializer):
+    patient = serializers.PrimaryKeyRelatedField(queryset=Patient.objects.all())
+    dentist = serializers.PrimaryKeyRelatedField(queryset=Dentist.objects.all())
+    analyzed_image = ImageAnalysisSerializer(read_only=True, required=False)
+    analyzed_image_id = serializers.PrimaryKeyRelatedField(
+        queryset=ImageAnalysis.objects.all(),
+        source='analyzed_image',
+        required=False,
+        allow_null=True
+    )
+
+    class Meta:
+        model = Appointment
+        fields = [
+            'id', 'detail', 'date', 'start_time', 'end_time',
+            'approved', 'patient', 'dentist', 'created_at',
+            'analyzed_image', 'analyzed_image_id', 'treatment'
+        ]
+
+    def validate(self, data):
+        """
+        Custom validation to handle the comparison that was causing errors.
+        """
+        # Check if this is a partial update for just the treatment field
+        if self.partial and set(data.keys()) == {'treatment'}:
+            # Skip other validations if we're only updating the treatment
+            return data
+            
+        # Get the start and end times, either from validated data or original instance
+        instance = self.instance
+        start_time = data.get('start_time', instance.start_time if instance else None)
+        end_time = data.get('end_time', instance.end_time if instance else None)
+        
+        # Only do comparison if both times are provided
+        if start_time is not None and end_time is not None:
+            if start_time >= end_time:
+                raise serializers.ValidationError({"end_time": "End time must be after start time."})
+        
+        return data
 class PatientSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    id = serializers.IntegerField(source='user_id', read_only=True)  # Map user_id to id
+    id = serializers.IntegerField(source='user_id', read_only=True)
+    appointments = AppointmentSerializer(many=True, read_only=True, source='appointment')
 
     class Meta:
         model = Patient
-        fields = ['id', 'user', 'emergency_contact', 'allergies', 'member_since']
+        fields = ['id', 'user', 'emergency_contact', 'allergies', 'member_since', 'appointments']
 
 class RegisterDentistSerializer(serializers.ModelSerializer):
     gender = serializers.CharField(required=True)
@@ -196,49 +241,7 @@ class RegisterPatientSerializer(serializers.ModelSerializer):
         
         return user
 
-class DentalImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DentalImage
-        fields = ['id', 'image', 'image_url', 'uploaded_at']
 
-class DiseaseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Disease
-        fields = ['id', 'name', 'description']
-
-# Update in serializers.py
-class ImageAnalysisSerializer(serializers.ModelSerializer):
-    diseases = DiseaseSerializer(many=True, read_only=True)
-    original_image = DentalImageSerializer(read_only=True)
-    
-    class Meta:
-        model = ImageAnalysis
-        fields = ['id', 'user', 'original_image', 'analyzed_image_url', 'created_at', 
-                  'diseases', 'total_conditions', 'calculus_count', 'caries_count', 
-                  'gingivitis_count', 'hypodontia_count', 'tooth_discolation_count', 
-                  'ulcer_count']
-
-# api/serializers.py
-class AppointmentSerializer(serializers.ModelSerializer):
-    patient_name = serializers.SerializerMethodField()
-    dentist_name = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Appointment
-        fields = [
-            'id', 'detail', 'date', 'start_time', 'end_time', 'approved',
-            'patient', 'dentist', 'patient_name', 'dentist_name', 'created_at'
-        ]
-        extra_kwargs = {
-            'patient': {'required': True, 'allow_null': False},
-            'dentist': {'required': True, 'allow_null': False},
-        }
-
-    def get_patient_name(self, obj):
-        return f"{obj.patient.user.first_name} {obj.patient.user.last_name}"
-
-    def get_dentist_name(self, obj):
-        return f"{obj.dentist.user.first_name} {obj.dentist.user.last_name}"
 
 class TreatmentSerializer(serializers.ModelSerializer):
     dentist_name = serializers.SerializerMethodField()

@@ -73,12 +73,7 @@ const AICheckup: React.FC = () => {
 
   return (
     <div className="container">
-      <div className="logo-container">
-        <div className="left-logo">
-          <img src="/logo.png" alt="Dental Care Logo" className="logo" />
-          <h2>DENTAL CARE</h2>
-        </div>
-      </div>
+      
 
       <h1 className="page-title">AI Checkup</h1>
 

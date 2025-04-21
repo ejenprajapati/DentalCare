@@ -113,17 +113,26 @@ class DentistViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
 # Patient Views
+# api/views.py (partial update)
+
 class PatientViewSet(viewsets.ModelViewSet):
     serializer_class = PatientSerializer
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         if self.request.user.role == 'patient':
-            return Patient.objects.filter(user=self.request.user)
+            return Patient.objects.filter(user=self.request.user).prefetch_related(
+                'appointment',
+                'appointment__analyzed_image',
+                'appointment__analyzed_image__diseases'
+            ).select_related('user')
         elif self.request.user.role == 'dentist':
-            # Dentists can see patients who have appointments with them
             dentist = self.request.user.dentist
-            return Patient.objects.filter(appointment__dentist=dentist).distinct()
+            return Patient.objects.filter(appointment__dentist=dentist).distinct().prefetch_related(
+                'appointment',
+                'appointment__analyzed_image',
+                'appointment__analyzed_image__diseases'
+            ).select_related('user')
         else:
             return Patient.objects.none()
 
@@ -136,14 +145,18 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.is_authenticated:
             if user.role == 'patient':
-                return Appointment.objects.filter(patient=user.patient)
+                return Appointment.objects.filter(patient=user.patient).select_related(
+                    'analyzed_image', 'analyzed_image__original_image', 'patient__user', 'dentist__user'
+                ).prefetch_related('analyzed_image__diseases')
             elif user.role == 'dentist':
-                return Appointment.objects.filter(dentist=user.dentist)
+                return Appointment.objects.filter(dentist=user.dentist).select_related(
+                    'analyzed_image', 'analyzed_image__original_image', 'patient__user', 'dentist__user'
+                ).prefetch_related('analyzed_image__diseases')
         return Appointment.objects.none()
+
     def create(self, request, *args, **kwargs):
         user = self.request.user
         data = request.data.copy()
-        print(f"Incoming data: {data}")  # Debug log
         
         if user.role == 'patient' and not data.get('patient'):
             if hasattr(user, 'patient'):
@@ -157,10 +170,38 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response({
+            'status': 'success',
+            'data': serializer.data,
+            'redirect': '/appointments'
+        }, status=status.HTTP_201_CREATED, headers=headers)
         
     def perform_create(self, serializer):
         serializer.save()
+    
+    # Add this method to handle PATCH requests
+    def partial_update(self, request, *args, **kwargs):
+        """
+        Handle PATCH requests to update an appointment partially.
+        """
+        instance = self.get_object()
+        
+        # Print debugging information
+        print(f"PATCH request data: {request.data}")
+        
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        
+        try:
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            print(f"Update successful: {serializer.data}")
+            return Response(serializer.data)
+        except Exception as e:
+            print(f"Error in partial_update: {str(e)}")
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     @action(detail=True, methods=['patch'])
     def approve(self, request, pk=None):
@@ -227,6 +268,17 @@ class WorkScheduleViewSet(viewsets.ModelViewSet):
 class AnalyzeImageView(APIView):
     parser_classes = (MultiPartParser, FormParser)
     permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            if hasattr(user, 'dentist_profile'):
+                return Appointment.objects.filter(dentist=user.dentist_profile)
+            elif hasattr(user, 'patient_profile'):
+                return Appointment.objects.filter(patient=user.patient_profile)
+        return Appointment.objects.none()
+
+    def perform_create(self, serializer):
+        serializer.save()
     
     def post(self, request, *args, **kwargs):
         print("AnalyzeImageView post method called!")

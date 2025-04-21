@@ -1,7 +1,7 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import appointment_img from '../assets/appointment-page.png';
 import axios from 'axios';
-
+import { useLocation } from 'react-router-dom';
 interface Dentist {
   id?: number;
   user: {
@@ -28,8 +28,9 @@ interface AppointmentFormData {
   start_time: string;
   end_time: string;
   dentist: number;
-  patient?: number| string;
+  patient?: number | string;
   agreeToPrivacy: boolean;
+  analyzed_image_id?: number | string; 
 }
 
 interface UserProfile {
@@ -144,6 +145,7 @@ const AppointmentPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [availableEndTimes, setAvailableEndTimes] = useState<string[]>([]);
+  const [analyzedImages, setAnalyzedImages] = useState<any[]>([]);
   const [filteredDentists, setFilteredDentists] = useState<Dentist[]>([]);
   const [showSchedule, setShowSchedule] = useState<boolean>(false);
   const [schedule, setSchedule] = useState<WorkSchedule[]>([]);
@@ -161,8 +163,48 @@ const AppointmentPage: React.FC = () => {
     dentist: 0,
     patient: '',
     agreeToPrivacy: false,
+    analyzed_image_id: '',
   });
-
+  
+    const location = useLocation();
+    
+    // Add this effect to handle URL parameters when the component loads
+    useEffect(() => {
+      const params = new URLSearchParams(location.search);
+      const patientId = params.get('patient');
+      
+      if (patientId) {
+        setFormData(prev => ({
+          ...prev,
+          patient: patientId
+        }));
+        
+        // If you want to display a message that this was pre-selected
+        const patientName = params.get('patientName');
+        if (patientName) {
+          setSuccessMessage(`Setting up appointment for ${patientName}`);
+        }
+      }
+    }, [location]);
+  useEffect(() => {
+    const fetchAnalyzedImages = async () => {
+      if (userProfile?.role !== 'patient') return; // Only fetch for patients
+  
+      try {
+        const response = await axios.get(`${API_BASE_URL}/api/user/analyses/`, {
+          headers: getAuthHeader(),
+        });
+        setAnalyzedImages(response.data);
+      } catch (err) {
+        console.error('Error fetching analyzed images:', err);
+        setError('Failed to load analyzed images.');
+      }
+    };
+  
+    if (userProfile) {
+      fetchAnalyzedImages();
+    }
+  }, [userProfile]);
   // Effect to update available end times based on selected start time
   useEffect(() => {
     if (formData.start_time) {
@@ -568,125 +610,116 @@ const AppointmentPage: React.FC = () => {
     setShowAvailableSlots(false);
   };
 
- const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-
-  try {
-    setLoading(true);
-    setError(null);
-    setSuccessMessage(null);
-
-    const token = getAuthToken();
-    if (!token) {
-      setError('You must be logged in to schedule an appointment.');
-      setLoading(false);
-      return;
-    }
-
-    // Validate form
-    if (!formData.dentist || formData.dentist === 0) {
-      setError('Please select a doctor');
-      setLoading(false);
-      return;
-    }
-
-    if (!formData.start_time || !formData.end_time) {
-      setError('Please select both start and end times.');
-      setLoading(false);
-      return;
-    }
-
-    const startTimeIndex = TIME_OPTIONS.indexOf(formData.start_time);
-    const endTimeIndex = TIME_OPTIONS.indexOf(formData.end_time);
-
-    if (startTimeIndex >= endTimeIndex) {
-      setError('End time must be after start time.');
-      setLoading(false);
-      return;
-    }
-
-    const finalDetail =
-      formData.detail === 'Other' ? formData.customDetail : formData.detail;
-
-    if (formData.detail === 'Other' && !formData.customDetail.trim()) {
-      setError('Please specify the reason for your visit.');
-      setLoading(false);
-      return;
-    }
-
-    const appointmentData: any = {
-      detail: finalDetail,
-      date: formData.date,
-      start_time: formData.start_time,
-      end_time: formData.end_time,
-      dentist: Number(formData.dentist),
-    };
-
-    // Set patient ID based on user role
-    if (userProfile?.role === 'dentist' && formData.patient) {
-      appointmentData.patient = Number(formData.patient);
-    } else if (userProfile?.role === 'patient' && userProfile?.patient?.id) {
-      appointmentData.patient = Number(userProfile.patient.id);
-      console.log('Setting patient ID in appointment data:', userProfile.patient.id);
-    } else {
-      setError('Patient profile not found. Please contact support.');
-      setLoading(false);
-      return;
-    }
-
-    console.log('Submitting appointment data:', appointmentData);
-    console.log('Auth headers:', getAuthHeader());
-
-    const response = await axios.post(
-      `${API_BASE_URL}/api/appointments/`,
-      appointmentData,
-      {
-        headers: getAuthHeader(),
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+  
+    try {
+      setLoading(true);
+      setError(null);
+      setSuccessMessage(null);
+  
+      const token = getAuthToken();
+      if (!token) {
+        setError('You must be logged in to schedule an appointment.');
+        setLoading(false);
+        return;
       }
-    );
-
-    console.log('Appointment response:', response.data);
-    setSuccessMessage('Appointment scheduled successfully!');
-
-    // Reset form
-    setFormData({
-      detail: '',
-      customDetail: '',
-      date: '',
-      start_time: '',
-      end_time: '',
-      dentist: 0,
-      agreeToPrivacy: false,
-    });
-
-    setShowSchedule(false);
-    setShowAvailableSlots(false);
-  } catch (err: any) {
-    console.error('Error scheduling appointment:', err);
-    if (err.response) {
-      console.error('Response error data:', err.response.data);
-      console.error('Response error status:', err.response.status);
-      if (err.response.status === 403) {
-        setError('Permission denied. Please check if you are logged in with the correct account type.');
-      } else if (err.response.status === 401) {
-        setError('Authentication error: Your session may have expired. Please log in again.');
-      } else if (err.response.data && typeof err.response.data === 'object') {
-        const errorMessage = Object.values(err.response.data)
-          .flat()
-          .join(' ');
-        setError(errorMessage || 'An error occurred while scheduling your appointment.');
+  
+      // Validate form
+      if (!formData.dentist || formData.dentist === 0) {
+        setError('Please select a doctor');
+        setLoading(false);
+        return;
+      }
+  
+      if (!formData.start_time || !formData.end_time) {
+        setError('Please select both start and end times.');
+        setLoading(false);
+        return;
+      }
+  
+      const startTimeIndex = TIME_OPTIONS.indexOf(formData.start_time);
+      const endTimeIndex = TIME_OPTIONS.indexOf(formData.end_time);
+  
+      if (startTimeIndex >= endTimeIndex) {
+        setError('End time must be after start time.');
+        setLoading(false);
+        return;
+      }
+  
+      const finalDetail =
+        formData.detail === 'Other' ? formData.customDetail : formData.detail;
+  
+      if (formData.detail === 'Other' && !formData.customDetail.trim()) {
+        setError('Please specify the reason for your visit.');
+        setLoading(false);
+        return;
+      }
+  
+      const appointmentData: any = {
+        detail: finalDetail,
+        date: formData.date,
+        start_time: formData.start_time,
+        end_time: formData.end_time,
+        dentist: Number(formData.dentist),
+        analyzed_image_id: formData.analyzed_image_id
+          ? Number(formData.analyzed_image_id)
+          : undefined, // Include only if selected
+      };
+  
+      // Set patient ID based on user role
+      if (userProfile?.role === 'dentist' && formData.patient) {
+        appointmentData.patient = Number(formData.patient);
+      } else if (userProfile?.role === 'patient' && userProfile?.patient?.id) {
+        appointmentData.patient = Number(userProfile.patient.id);
       } else {
-        setError('An error occurred while scheduling your appointment.');
+        setError('Patient profile not found. Please contact support.');
+        setLoading(false);
+        return;
       }
-    } else if (err.request) {
-      setError('No response from server. Please check your internet connection.');
-    } else {
-      setError('An error occurred while preparing your request.');
+  
+      console.log('Submitting appointment data:', appointmentData);
+      const response = await axios.post(
+        `${API_BASE_URL}/api/appointments/`,
+        appointmentData,
+        {
+          headers: getAuthHeader(),
+        }
+      );
+  
+      console.log('Appointment response:', response.data);
+      setSuccessMessage('Appointment scheduled successfully!');
+  
+      // Reset form
+      setFormData({
+        detail: '',
+        customDetail: '',
+        date: '',
+        start_time: '',
+        end_time: '',
+        dentist: 0,
+        agreeToPrivacy: false,
+        analyzed_image_id: '',
+      });
+  
+      setShowSchedule(false);
+      setShowAvailableSlots(false);
+    } catch (err: any) {
+      console.error('Error scheduling appointment:', err);
+      if (err.response) {
+        console.error('Response error data:', err.response.data);
+        setError(
+          err.response.data.detail ||
+            Object.values(err.response.data).flat().join(' ') ||
+            'An error occurred while scheduling your appointment.'
+        );
+      } else {
+        setError('Failed to schedule appointment. Please try again.');
+      }
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   // Format time for display (24hr -> 12hr format)
   const formatTime = (time: string): string => {
@@ -791,6 +824,24 @@ const AppointmentPage: React.FC = () => {
                   />
                 </div>
               </div>
+              {userProfile?.role === "patient" && (
+              <div className="form-group">
+                <label>Analyzed Image (Optional)</label>
+                <select
+                  name="analyzed_image_id"
+                  className="form-control"
+                  value={formData.analyzed_image_id}
+                  onChange={handleChange}
+                >
+                  <option value="">Select an analyzed image (optional)</option>
+                  {analyzedImages.map((image) => (
+                    <option key={image.id} value={image.id}>
+                      Image analyzed on {new Date(image.created_at).toLocaleString()}
+                    </option>
+                  ))}
+                </select>
+              </div>
+               )}
   
               {userProfile?.role === "dentist" && (
               <div className="form-group">

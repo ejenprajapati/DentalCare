@@ -15,6 +15,7 @@ import AICheckup from './pages/AICheckup';
 import Results  from './pages/Results';
 import ProtectedRoute from "./components/ProtectedRoute"
 import Dashboard from "./pages/Dashboard"
+import Patient from "./pages/PatientsPage"
 import AnalysisHistory from './pages/AnalysisHistory';
 // import AboutPage from './pages/AboutPage';
 // import ContactPage from './pages/ContactPage';
@@ -54,7 +55,7 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/add-dentist" element={<DentistSignup />} />
               <Route path="/dentist-appointment" element={<DentistAppointment/>} />
-              <Route path="/blogs" element={<BlogsPage />} />
+              <Route path="/patients" element={<Patient />} />
               <Route path="/analysis-history" element={<AnalysisHistory />} />
               <Route path="/appointment" element={
                   <ProtectedRoute>

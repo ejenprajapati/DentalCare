@@ -94,14 +94,14 @@ class ImageClassificationInline(admin.TabularInline):
 
 @admin.register(ImageAnalysis)
 class ImageAnalysisAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'created_at')
+    list_display = ('id', 'user', 'original_image', 'analyzed_image_url', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('user__username', 'user__email')
     inlines = [ImageClassificationInline]
 
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'patient', 'dentist', 'date', 'start_time', 'end_time', 'approved')
+    list_display = ('id', 'patient', 'dentist', 'detail','date', 'start_time', 'end_time', 'approved')
     list_filter = ('approved', 'date')
     search_fields = ('patient__user__username', 'dentist__user__username')
 

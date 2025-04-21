@@ -9,11 +9,13 @@ import DentistSignup from './pages/DentistSignup';
 import ServicesPage from './pages/ServicesPage';
 import BlogsPage from './pages/BlogsPage';
 import AppointmentPage from './pages/AppointmentPage';
+import DentistAppointment from './pages/DentistAppointment';
 import NotFound from "./pages/NotFound"
 import AICheckup from './pages/AICheckup';
 import Results  from './pages/Results';
 import ProtectedRoute from "./components/ProtectedRoute"
 import Dashboard from "./pages/Dashboard"
+import AnalysisHistory from './pages/AnalysisHistory';
 // import AboutPage from './pages/AboutPage';
 // import ContactPage from './pages/ContactPage';
 import './App.css';
@@ -51,7 +53,9 @@ function App() {
               <Route path="/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/add-dentist" element={<DentistSignup />} />
+              <Route path="/dentist-appointment" element={<DentistAppointment/>} />
               <Route path="/blogs" element={<BlogsPage />} />
+              <Route path="/analysis-history" element={<AnalysisHistory />} />
               <Route path="/appointment" element={
                   <ProtectedRoute>
                     <AppointmentPage />

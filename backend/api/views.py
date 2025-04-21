@@ -43,6 +43,7 @@ from .serializers import (
 from django.contrib.auth import get_user_model
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.core.files.base import ContentFile
 
 User = get_user_model()  
 # Keep your existing AnalyzeImageView
@@ -141,9 +142,9 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         return Appointment.objects.none()
     def create(self, request, *args, **kwargs):
         user = self.request.user
-        data = request.data.copy()  # Create a mutable copy of request data
+        data = request.data.copy()
+        print(f"Incoming data: {data}")  # Debug log
         
-        # Set patient ID if user is a patient and patient ID not provided
         if user.role == 'patient' and not data.get('patient'):
             if hasattr(user, 'patient'):
                 data['patient'] = user.patient.pk
@@ -211,7 +212,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 # Work Schedule Views
 class WorkScheduleViewSet(viewsets.ModelViewSet):
     serializer_class = WorkScheduleSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         dentist_id = self.kwargs.get('dentist_pk')
@@ -225,8 +226,9 @@ class WorkScheduleViewSet(viewsets.ModelViewSet):
 
 class AnalyzeImageView(APIView):
     parser_classes = (MultiPartParser, FormParser)
-    permission_classes = [AllowAny]
-    print("inside analye image")
+    # We should require authentication for saving user-specific data
+    permission_classes = [IsAuthenticated]
+    
     def post(self, request, *args, **kwargs):
         print("AnalyzeImageView post method called!")
         image_file = request.FILES.get('image')
@@ -235,10 +237,15 @@ class AnalyzeImageView(APIView):
                 {'error': 'No image provided'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
-        print("inside post image")
+        print("Processing uploaded image")
         
         try:
-            print("inside try   ")
+            # Save the original image to our database
+            dental_image = DentalImage.objects.create(
+                image=image_file,
+                image_type='dental'
+            )
+            
             # Save uploaded image to temporary file
             with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_file:
                 for chunk in image_file.chunks():
@@ -246,12 +253,11 @@ class AnalyzeImageView(APIView):
                 temp_file_path = temp_file.name
             
             # Load the YOLO model
-            
             BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             model_path = os.path.join(BASE_DIR, 'model', 'best_model.pt')
             print(f"Attempting to load model from: {os.path.abspath(model_path)}")
+            
             try:
-                
                 model = YOLO(model_path)
             except Exception as e:
                 return Response(
@@ -308,11 +314,43 @@ class AnalyzeImageView(APIView):
                 for box in boxes_list:
                     draw.rectangle(box, outline=colors[class_name], width=3)
                     # Add label to the box
-                    draw.text((box[0], box[1] - 15), f"{class_name}: {class_counts[class_name]}", fill=colors[class_name])
+                    draw.text((box[0], box[1] - 15), f"{class_name}: {class_counts[class_name]}", 
+                            fill=colors[class_name])
             
             # Save the annotated image
             annotated_img_path = temp_file_path + "_annotated.jpg"
             img.save(annotated_img_path)
+            
+            # Save the annotated image to Django file storage
+            with open(annotated_img_path, 'rb') as f:
+                annotated_image_name = f"analyzed_{image_file.name}"
+                # Save the annotated image to the DentalImage model
+                dental_image = DentalImage.objects.create(
+                    image=ContentFile(f.read(), name=annotated_image_name),
+                    image_type='dental'
+                )
+            
+                # Create an ImageAnalysis record
+                analysis = ImageAnalysis.objects.create(
+                    user=request.user,
+                    original_image=dental_image,
+                    analyzed_image_url=dental_image.image.url
+                 )
+                # Get or create disease records for each detected condition
+                for disease_name, count in class_counts.items():
+                    if count > 0:
+                        # Convert snake_case to normal case for disease name
+                        display_name = disease_name.replace('_', ' ').capitalize()
+                        disease, created = Disease.objects.get_or_create(
+                            name=display_name,
+                            defaults={'description': f'AI detected {display_name}'}
+                        )
+                        
+                        # Create the ImageClassification relation with confidence
+                        analysis.diseases.add(
+                            disease, 
+                            through_defaults={'confidence': 0.9}  # Placeholder confidence
+                        )
             
             # Converting images to base64 for response
             with open(temp_file_path, "rb") as img_file:
@@ -325,7 +363,8 @@ class AnalyzeImageView(APIView):
             response_data = {
                 'originalImage': f"data:image/jpeg;base64,{original_img_base64}",
                 'analyzedImage': f"data:image/jpeg;base64,{analyzed_img_base64}",
-                'totalConditionsDetected': sum(class_counts.values())
+                'totalConditionsDetected': sum(class_counts.values()),
+                'analysisId': analysis.id  # Include the analysis ID for future reference
             }
             
             # Add counts for each dental condition
@@ -466,3 +505,10 @@ class DashboardStatsView(APIView):
             'recent_patients': recent_patients_list,
             'gender_distribution': gender_counts
         })
+    
+class UserAnalysisListView(generics.ListAPIView):
+    serializer_class = ImageAnalysisSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        return ImageAnalysis.objects.filter(user=self.request.user).order_by('-created_at')

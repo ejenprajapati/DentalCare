@@ -118,7 +118,7 @@ class Patient(models.Model):
 
 class DentalImage(models.Model):
     image = models.ImageField(upload_to='dental_images/')
-    image_type = models.CharField(max_length=10)
+    image_type = models.CharField(max_length=10, default="dental")
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
@@ -136,7 +136,7 @@ class Disease(models.Model):
 class ImageAnalysis(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE)
     original_image = models.ForeignKey(DentalImage, on_delete=models.CASCADE)
-    analyzed_image_url = models.CharField(max_length=255)
+    analyzed_image_url = models.CharField(max_length=255, default= "none")
     created_at = models.DateTimeField(auto_now_add=True)
     diseases = models.ManyToManyField(Disease, through='ImageClassification')
     

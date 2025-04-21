@@ -11,6 +11,7 @@ interface AnalysisResults {
   hypodontiaCount: number;
   toothDiscolationCount: number;
   ulcerCount: number;
+  analysisId?: number; // Optional field for database reference
 }
 
 const Results: React.FC = () => {
@@ -32,6 +33,10 @@ const Results: React.FC = () => {
     navigate('/ai-checkup');
   };
   
+  const viewHistory = () => {
+    navigate('/analysis-history');
+  };
+  
   if (!results) {
     return <div className="loading">Loading results...</div>;
   }
@@ -42,9 +47,18 @@ const Results: React.FC = () => {
     caries: "#FF0000", // Red
     gingivitis: "#FF69B4", // Hot pink
     hypodontia: "#800080", // Purple
-    toothDiscolation: "#A0522D", // Brown (changed from tooth_discolation to match camelCase)
+    toothDiscolation: "#A0522D", // Brown
     ulcer: "#FFA500" // Orange
   };
+  
+  // Check if images are base64 or URLs and handle accordingly
+  const originalImgSrc = results.originalImage.startsWith('data:') 
+    ? results.originalImage 
+    : `http://127.0.0.1:8000${results.originalImage}`;
+    
+  const analyzedImgSrc = results.analyzedImage.startsWith('data:') 
+    ? results.analyzedImage 
+    : `http://127.0.0.1:8000${results.analyzedImage}`;
   
   return (
     <div className="container">
@@ -61,11 +75,11 @@ const Results: React.FC = () => {
         <div className="image-comparison">
           <div className="image-box">
             <h3>Original Image</h3>
-            <img src={results.originalImage} alt="Original Image" />
+            <img src={originalImgSrc} alt="Original Image" />
           </div>
           <div className="image-box">
             <h3>Analyzed Image</h3>
-            <img src={results.analyzedImage} alt="Analyzed Image" />
+            <img src={analyzedImgSrc} alt="Analyzed Image" />
           </div>
         </div>
         
@@ -183,9 +197,14 @@ const Results: React.FC = () => {
           </p>
         </div>
         
-        <button className="btn back-btn" onClick={handleBack}>
-          Back to Upload
-        </button>
+        <div className="action-buttons">
+          <button className="btn back-btn" onClick={handleBack}>
+            Back to Upload
+          </button>
+          <button className="btn history-btn" onClick={viewHistory}>
+            View Analysis History
+          </button>
+        </div>
       </div>
     </div>
   );

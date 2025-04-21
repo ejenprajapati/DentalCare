@@ -39,11 +39,15 @@ const AICheckup: React.FC = () => {
     const formData = new FormData();
     formData.append('image', selectedFile);
 
+    // Get auth token from localStorage or sessionStorage
+    const token = localStorage.getItem('access'); // Adjust based on where you store your token
+    
     try {
-      // Fixed URL - removed trailing slash to match backend URL pattern
+      // Post to the API with authentication token
       const response = await axios.post('http://127.0.0.1:8000/api/analyze-image/', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}` // Add JWT token for authentication
         }
       });
 
@@ -54,7 +58,14 @@ const AICheckup: React.FC = () => {
       navigate('/results');
     } catch (error) {
       console.error('Error analyzing image:', error);
-      alert('An error occurred while analyzing the image. Please try again.');
+      
+      // Check if it's an authentication error
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        alert('Please log in to use the AI Checkup feature.');
+        navigate('/login'); // Redirect to login page
+      } else {
+        alert('An error occurred while analyzing the image. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }

@@ -30,13 +30,20 @@ from django.contrib.auth import get_user_model
 User = get_user_model()  
 
 class UserSerializer(serializers.ModelSerializer):
+    patient = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password', 'phone_number', 'role', 'gender']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password', 'phone_number', 'role', 'gender', 'patient']
         extra_kwargs = {
             'password': {'write_only': True},
         }
     
+    def get_patient(self, obj):
+        if obj.role == 'patient' and hasattr(obj, 'patient'):
+            return {'id': obj.patient.pk}
+        return None
+
     def create(self, validated_data):
         user = User.objects.create_user(
             username=validated_data['username'],
@@ -44,7 +51,7 @@ class UserSerializer(serializers.ModelSerializer):
             password=validated_data['password'],
             first_name=validated_data.get('first_name', ''),
             last_name=validated_data.get('last_name', ''),
-            phone_number=validated_data.get('phone_number', '')
+            phone_number=validated_data.get('phone_number', ''),
         )
         return user
 
@@ -209,15 +216,21 @@ class ImageAnalysisSerializer(serializers.ModelSerializer):
 class AppointmentSerializer(serializers.ModelSerializer):
     patient_name = serializers.SerializerMethodField()
     dentist_name = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Appointment
-        fields = ['id', 'detail', 'date', 'start_time', 'end_time', 'approved', 
-                 'patient', 'dentist', 'patient_name', 'dentist_name', 'created_at']
-    
+        fields = [
+            'id', 'detail', 'date', 'start_time', 'end_time', 'approved',
+            'patient', 'dentist', 'patient_name', 'dentist_name', 'created_at'
+        ]
+        extra_kwargs = {
+            'patient': {'required': True, 'allow_null': False},
+            'dentist': {'required': True, 'allow_null': False},
+        }
+
     def get_patient_name(self, obj):
         return f"{obj.patient.user.first_name} {obj.patient.user.last_name}"
-    
+
     def get_dentist_name(self, obj):
         return f"{obj.dentist.user.first_name} {obj.dentist.user.last_name}"
 
@@ -234,7 +247,7 @@ class TreatmentSerializer(serializers.ModelSerializer):
 class WorkScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkSchedule
-        fields = ['id', 'dentist', 'day', 'start_time', 'end_time']
+        fields = ['id', 'dentist', 'day', 'start_hour', 'end_hour']
 
 class CommentSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()

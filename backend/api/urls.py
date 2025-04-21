@@ -22,7 +22,7 @@ from .views import (
     BlogViewSet, CommentViewSet, WorkScheduleViewSet,
     UserProfileView, AnalyzeImageView,
     # Import the registration views that you have or will create
-    RegisterPatientView, RegisterDentistView
+    RegisterPatientView, RegisterDentistView, UserAnalysisListView
 )
 
 router = DefaultRouter()
@@ -58,5 +58,6 @@ urlpatterns = [
     
     path('analyze-image/', AnalyzeImageView.as_view(), name='analyze-image'),
     path('dashboard/stats/', DashboardStatsView.as_view(), name='dashboard-stats'),
+    path('user/analyses/', UserAnalysisListView.as_view(), name='user-analyses'),
     
 ]

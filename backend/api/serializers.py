@@ -64,10 +64,11 @@ class DentistSerializer(serializers.ModelSerializer):
 
 class PatientSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    
+    id = serializers.IntegerField(source='user_id', read_only=True)  # Map user_id to id
+
     class Meta:
         model = Patient
-        fields = ['user', 'emergency_contact', 'allergies', 'member_since']
+        fields = ['id', 'user', 'emergency_contact', 'allergies', 'member_since']
 
 class RegisterDentistSerializer(serializers.ModelSerializer):
     gender = serializers.CharField(required=True)

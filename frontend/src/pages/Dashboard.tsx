@@ -129,10 +129,10 @@ const Dashboard: React.FC = () => {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h1>Dashboard</h1>
+        
         <div className="dashboard-welcome">
-          <h2>Welcome {dentistName}</h2>
-          <p>Have a nice day at work.</p>
+          <h2> {dentistName}</h2>
+          
         </div>
       </div>
 

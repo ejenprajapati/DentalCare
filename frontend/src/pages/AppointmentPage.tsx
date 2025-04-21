@@ -28,7 +28,7 @@ interface AppointmentFormData {
   start_time: string;
   end_time: string;
   dentist: number;
-  patient?: number;
+  patient?: number| string;
   agreeToPrivacy: boolean;
 }
 
@@ -159,6 +159,7 @@ const AppointmentPage: React.FC = () => {
     start_time: '',
     end_time: '',
     dentist: 0,
+    patient: '',
     agreeToPrivacy: false,
   });
 
@@ -336,22 +337,43 @@ const AppointmentPage: React.FC = () => {
       const fetchPatients = async () => {
         try {
           const response = await axios.get(`${API_BASE_URL}/api/patients/`, {
-            headers: getAuthHeader()
+            headers: getAuthHeader(),
           });
-          
+  
           if (Array.isArray(response.data)) {
+            console.log('Fetched patients:', response.data);
+            // Check for duplicate or missing IDs
+            const ids = response.data.map((p: Patient) => p.id);
+            const uniqueIds = new Set(ids);
+            if (ids.length !== uniqueIds.size) {
+              console.warn('Duplicate patient IDs detected:', ids);
+            }
+            if (ids.some((id: number) => id == null || isNaN(id))) {
+              console.warn('Invalid patient IDs detected:', ids);
+            }
             setPatients(response.data);
           } else if (response.data && typeof response.data === 'object') {
             const patientsArray = response.data.results || [];
+            console.log('Fetched patients (results):', patientsArray);
+            const ids = patientsArray.map((p: Patient) => p.id);
+            const uniqueIds = new Set(ids);
+            if (ids.length !== uniqueIds.size) {
+              console.warn('Duplicate patient IDs detected:', ids);
+            }
+            if (ids.some((id: number) => id == null || isNaN(id))) {
+              console.warn('Invalid patient IDs detected:', ids);
+            }
             setPatients(Array.isArray(patientsArray) ? patientsArray : []);
           } else {
             setPatients([]);
+            console.error('Unexpected patients response format:', response.data);
           }
         } catch (err) {
           console.error('Error fetching patients:', err);
+          setError('Failed to load patients. Please try again.');
         }
       };
-      
+  
       fetchPatients();
     }
   }, [userProfile]);
@@ -771,23 +793,26 @@ const AppointmentPage: React.FC = () => {
               </div>
   
               {userProfile?.role === "dentist" && (
-                <div className="form-group">
-                  <label>Patient</label>
-                  <select
-                    name="patient"
-                    className="form-control"
-                    value={formData.patient}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Select Patient</option>
-                    {patients.map((patient) => (
-                      <option key={patient.id} value={patient.id}>
-                        {patient.user.first_name} {patient.user.last_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <div className="form-group">
+                <label>Patient</label>
+                <select
+                  name="patient"
+                  className="form-control"
+                  value={formData.patient === undefined ? '' : formData.patient}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select Patient</option>
+                  {patients.map((patient, index) => (
+                    <option
+                      key={patient.id ?? `patient-${index}`} // Fallback to index if id is missing
+                      value={patient.id}
+                    >
+                      {patient.user.first_name} {patient.user.last_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
               )}
   
               <div className="form-group">

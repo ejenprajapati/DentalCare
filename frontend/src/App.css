@@ -2595,43 +2595,14 @@ body {
 
 
 /* General page styling */
-.container {
+/* .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
   font-family: 'Roboto', Arial, sans-serif;
-}
+} */
 
-.logo-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
 
-.left-logo {
-  display: flex;
-  align-items: center;
-}
-
-.logo {
-  height: 40px;
-  margin-right: 12px;
-}
-
-.left-logo h2 {
-  font-size: 20px;
-  font-weight: 600;
-  color: #0056b3;
-  margin: 0;
-}
-
-.page-title {
-  font-size: 28px;
-  margin-bottom: 30px;
-  color: #333;
-  text-align: center;
-}
 
 /* Loading state */
 .loading {

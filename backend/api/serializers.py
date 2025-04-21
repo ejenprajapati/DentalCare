@@ -9,6 +9,13 @@ from .models import (
 from django.contrib.auth import get_user_model
 
 User = get_user_model()  
+class SimpleUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone_number', 'role', 'gender', 'profile_picture', 'profile_picture_url']
+        extra_kwargs = {
+            'password': {'write_only': True},
+        }
 
 class UserSerializer(serializers.ModelSerializer):
     patient = serializers.SerializerMethodField()
@@ -119,7 +126,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
         
         return data
 class PatientSerializer(serializers.ModelSerializer):
-    # user = UserSerializer(read_only=True)
+    user = SimpleUserSerializer(read_only=True)
     id = serializers.IntegerField(source='user_id', read_only=True)
     appointments = AppointmentSerializer(many=True, read_only=True, source='appointment')
 

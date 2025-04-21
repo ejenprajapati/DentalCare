@@ -1,58 +1,67 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import './Sidebar.css';
+import { FaHome, FaCalendarAlt, FaUserFriends, FaChartLine, FaCog, FaSignOutAlt } from 'react-icons/fa';
 
 interface SidebarProps {
-  activeSection: string;
-  setActiveSection: (section: string) => void;
+  userRole: string;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection }) => {
+const Sidebar: React.FC<SidebarProps> = ({ userRole }) => {
+  const location = useLocation();
+  
+  // Only show sidebar for dentist users
+  if (userRole !== 'dentist') {
+    return null;
+  }
+
+  const menuItems = [
+    { path: '/dashboard', icon: <FaChartLine />, label: 'Dashboard' },
+    { path: '/appointments', icon: <FaCalendarAlt />, label: 'Appointments' },
+    { path: '/patients', icon: <FaUserFriends />, label: 'Patients' },
+    { path: '/settings', icon: <FaCog />, label: 'Settings' },
+  ];
+
   return (
     <div className="sidebar">
-      <div className="logo-container">
-        <img src="/logo.png" alt="Dental Care" className="logo" />
-        <span className="logo-text">DENTAL CARE</span>
+      <div className="sidebar-header">
+        <div className="logo">
+          <img src="/logo.png" alt="Dental Care" />
+          <h2>Dental Care</h2>
+        </div>
       </div>
       
-      <ul className="sidebar-menu">
-        <li 
-          className={activeSection === 'dashboard' ? 'active' : ''}
-          onClick={() => setActiveSection('dashboard')}
-        >
-          <i className="icon dashboard-icon"></i>
-          <span>Dashboard</span>
-        </li>
-        <li 
-          className={activeSection === 'appointments' ? 'active' : ''}
-          onClick={() => setActiveSection('appointments')}
-        >
-          <i className="icon appointments-icon"></i>
-          <span>Appointments</span>
-        </li>
-        <li 
-          className={activeSection === 'patients' ? 'active' : ''}
-          onClick={() => setActiveSection('patients')}
-        >
-          <i className="icon patients-icon"></i>
-          <span>Patients</span>
-        </li>
-        <li 
-          className={activeSection === 'settings' ? 'active' : ''}
-          onClick={() => setActiveSection('settings')}
-        >
-          <i className="icon settings-icon"></i>
-          <span>Settings</span>
-        </li>
-      </ul>
+      <div className="sidebar-user">
+        <div className="user-avatar">
+          <img src="/api/placeholder/40/40" alt="User Avatar" />
+        </div>
+        <div className="user-info">
+          <h3>Dr. Dentist</h3>
+          <span>Dentist</span>
+        </div>
+      </div>
       
-      <div className="dentist-profile">
-        <div className="profile-avatar">
-          <img src="/avatar-placeholder.png" alt="Dr." />
-        </div>
-        <div className="profile-info">
-          <span className="dentist-name">Dr. Dentist</span>
-          <i className="dropdown-icon"></i>
-        </div>
+      <nav className="sidebar-nav">
+        <ul>
+          {menuItems.map((item) => (
+            <li key={item.path}>
+              <Link 
+                to={item.path}
+                className={location.pathname === item.path ? 'active' : ''}
+              >
+                <span className="icon">{item.icon}</span>
+                <span className="label">{item.label}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      
+      <div className="sidebar-footer">
+        <Link to="/logout" className="logout-btn">
+          <span className="icon"><FaSignOutAlt /></span>
+          <span className="label">Logout</span>
+        </Link>
       </div>
     </div>
   );

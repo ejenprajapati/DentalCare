@@ -51,14 +51,17 @@ function Header() {
                 Appointment
               </Link>
             </li>
-            <li>
-              <Link 
-                to="/blogs" 
-                className={location.pathname === '/blogs' ? 'active' : ''}
-              >
-                Blogs
-              </Link>
-            </li>
+            {isLoggedIn && (
+              <li>
+                <Link 
+                  to="/analysis-history" 
+                  className={location.pathname === '/analysis-history' ? 'active' : ''}
+                >
+                  My Analysis
+                </Link>
+              </li>
+            )}
+            {!isLoggedIn && (
             <li>
               <Link 
                 to="/about" 
@@ -67,14 +70,17 @@ function Header() {
                 About
               </Link>
             </li>
-            <li>
-              <Link 
-                to="/contact" 
-                className={location.pathname === '/contact' ? 'active' : ''}
-              >
-                Contact
-              </Link>
-            </li>
+            )}
+            {isLoggedIn && (
+              <li>
+                <Link 
+                  to="/profile" 
+                  className={location.pathname === '/profile' ? 'active' : ''}
+                >
+                  Profile
+                </Link>
+              </li>
+            )}
           </ul>
         </nav>
         

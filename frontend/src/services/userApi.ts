@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { User, UpdateProfileData, UpdatePasswordData } from '../types/user';
 
- const API_BASE_URL = 'http://127.0.0.1:8000/api';
+ const API_BASE_URL = 'http://127.0.0.1:8000';
 
 
 // Create axios instance with authentication headers
@@ -23,7 +23,7 @@ authAxios.interceptors.request.use(
 );
 
 export const getUserProfile = async (): Promise<User> => {
-  const response = await authAxios.get('/user/profile/');
+  const response = await authAxios.get('/api/user/profile/');
   return response.data;
 };
 
@@ -37,7 +37,7 @@ export const updateUserProfile = async (data: UpdateProfileData): Promise<User> 
     }
   });
   
-  const response = await authAxios.patch('/user/profile/', formData, {
+  const response = await authAxios.patch('/api/user/profile/', formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
@@ -47,12 +47,12 @@ export const updateUserProfile = async (data: UpdateProfileData): Promise<User> 
 };
 
 export const updateUserPassword = async (data: UpdatePasswordData): Promise<{ success: boolean }> => {
-  const response = await authAxios.post('/user/change-password/', data);
+  const response = await authAxios.post('/api/user/change-password/', data);
   return response.data;
 };
 
 export const deleteUserAccount = async (): Promise<void> => {
-  await authAxios.delete('/user/profile/');
+  await authAxios.delete('/api/user/profile/');
   // Clear auth token and other stored data
   localStorage.removeItem('access');
 };

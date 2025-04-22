@@ -207,6 +207,39 @@ body {
   padding: 60px 0;
   background-color: var(--light-gray);
 }
+/* Button styling */
+.admin-actions button {
+  background-color: #2563eb; /* Equivalent to Tailwind's bg-blue-600 */
+  color: #ffffff; /* Equivalent to Tailwind's text-white */
+  font-weight: 700; /* Equivalent to Tailwind's font-bold */
+  padding: 0.5rem 1rem; /* Equivalent to Tailwind's py-2 px-4 (0.5rem = 8px, 1rem = 16px) */
+  border-radius: 0.25rem; /* Equivalent to Tailwind's rounded (0.25rem = 4px) */
+  border: none; /* Remove default button border */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: background-color 0.3s ease; /* Equivalent to Tailwind's transition-colors duration-300 */
+}
+
+/* Hover state */
+.admin-actions button:hover {
+  background-color: #1d4ed8; /* Equivalent to Tailwind's hover:bg-blue-700 */
+}
+
+/* Focus and active states for accessibility */
+.admin-actions button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3); /* Blue focus ring */
+}
+
+.admin-actions button:active {
+  background-color: #1e40af; /* Slightly darker blue for active state */
+}
+
+/* Disabled state (optional, if you add disabled logic) */
+.admin-actions button:disabled {
+  background-color: #93c5fd; /* Lighter blue for disabled */
+  cursor: not-allowed;
+  opacity: 0.7;
+}
 
 .service-cards {
   display: flex;

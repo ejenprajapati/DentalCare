@@ -7,6 +7,7 @@ import implantsImage from '../assets/implants.jpg';
 import teethWhiteningImage from '../assets/teeth-whitening.png';
 import emergencyImage from '../assets/emergency.png';
 import preventiveImage from '../assets/preventive.png';
+
 // Define interfaces for our data types
 interface User {
   id: number; 
@@ -18,6 +19,7 @@ interface User {
   role: string;
   gender: string | null;
   profile_picture_url: string;
+  is_staff: boolean;
   linkedin?: string;
 }
 
@@ -42,6 +44,7 @@ const ServicesPage: React.FC = () => {
   const [specialists, setSpecialists] = useState<Dentist[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchSpecialists = async (): Promise<void> => {
@@ -57,7 +60,31 @@ const ServicesPage: React.FC = () => {
       }
     };
 
+    const fetchCurrentUser = async (): Promise<void> => {
+      try {
+        // Assuming you have a JWT token stored in localStorage
+        const token = localStorage.getItem('access');
+        if (!token) {
+          return;
+        }
+
+        const response = await axios.get(`${API_BASE_URL}/api/user/profile/`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        // Check if the current user is an admin (is_staff = true)
+        if (response.data && response.data.is_staff) {
+          setIsAdmin(true);
+        }
+      } catch (err) {
+        console.error('Error fetching user info:', err);
+      }
+    };
+
     fetchSpecialists();
+    fetchCurrentUser();
   }, []);
 
   const services: Service[] = [
@@ -104,6 +131,11 @@ const ServicesPage: React.FC = () => {
       link: "/services/prevention"
     }
   ];
+
+  const handleManageSpecialists = () => {
+    // Add your navigation or modal logic here for managing specialists
+    window.location.href = '/dentist-signup/';
+  };
 
   return (
     <div className="services-page">
@@ -198,6 +230,18 @@ const ServicesPage: React.FC = () => {
                   </div>
                 );
               })}
+            </div>
+          )}
+          
+          {/* Admin-only button */}
+          {isAdmin && (
+            <div className="admin-actions mt-8 text-center">
+              <button 
+                onClick={handleManageSpecialists}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300"
+              >
+                Add Dentist
+              </button>
             </div>
           )}
         </div>

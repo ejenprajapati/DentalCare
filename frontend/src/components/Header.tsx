@@ -112,7 +112,7 @@ function Header() {
                 </Link>
               </li>
             )}
-            {!isLoggedIn && (
+            {/* {!isLoggedIn && (
               <li>
                 <Link 
                   to="/about" 
@@ -121,8 +121,8 @@ function Header() {
                   About
                 </Link>
               </li>
-            )}
-            {!isDentist && (
+            )} */}
+            {!isDentist &&isLoggedIn && (
               <li>
                 <Link 
                   to="/patient-appointments" 

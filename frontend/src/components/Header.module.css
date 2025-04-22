@@ -1,0 +1,99 @@
+.header {
+    background-color: var(--white);
+    border-radius: 0.5rem;
+    padding: 1rem;
+  }
+  
+  .navContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .logoContainer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+  }
+  
+  .logoImage {
+    border-radius: 50%;
+  }
+  
+  .logoText {
+    color: var(--primary-color);
+    font-size: 1.25rem;
+    font-weight: bold;
+  }
+  
+  .nav {
+    display: none;
+  }
+  
+  .navLink {
+    color: var(--gray-700);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem;
+  }
+  
+  .navLink:hover {
+    color: var(--primary-color);
+  }
+  
+  .authContainer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .userProfile {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .userAvatar {
+    border-radius: 50%;
+    border: 2px solid var(--gray-200);
+  }
+  
+  .aiCheckupBtn {
+    font-size: 0.875rem;
+  }
+  
+  .authButtons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .loginLink {
+    color: var(--gray-700);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .loginLink:hover {
+    color: var(--primary-color);
+  }
+  
+  .signupBtn {
+    font-size: 0.875rem;
+  }
+  
+  @media (min-width: 768px) {
+    .nav {
+      display: flex;
+      gap: 2rem;
+    }
+  }
+  
+  

@@ -17,9 +17,9 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole }) => {
 
   const menuItems = [
     { path: '/dashboard', icon: <FaChartLine />, label: 'Dashboard' },
-    { path: '/appointments', icon: <FaCalendarAlt />, label: 'Appointments' },
+    { path: '/dentist-appointment', icon: <FaCalendarAlt />, label: 'Schedule' },
     { path: '/patients', icon: <FaUserFriends />, label: 'Patients' },
-    { path: '/settings', icon: <FaCog />, label: 'Settings' },
+    { path: '/profile', icon: <FaCog />, label: 'Settings' },
   ];
 
   return (

@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import axios from 'axios';
+import defaultPic from '../assets/default.jpg';
+import userLogo from '../assets/user.png';
+import appointmentLogo from '../assets/appointment-logo.png';
+
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
 interface AppointmentData {
@@ -12,6 +16,7 @@ interface AppointmentData {
   gender: string;
   date: string;
   detail: string;
+  approved: boolean;
 }
 
 interface PatientData {
@@ -38,50 +43,145 @@ interface DashboardStats {
   dentist_name?: string;
 }
 
+const statusOptions = ['Approved', 'Declined'];
+
 const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [year, setYear] = useState<string>("2025");
   const [dentistName, setDentistName] = useState<string>("");
+  const [processingAppointment, setProcessingAppointment] = useState<number | null>(null);
+  const [editingStatus, setEditingStatus] = useState<number | null>(null);
+
+  const fetchDashboardStats = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('access');
+      
+      // Fetch user profile to get the dentist's name
+      const userResponse = await axios.get(`${API_BASE_URL}/api/user/profile/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const firstName = userResponse.data.first_name || '';
+      const lastName = userResponse.data.last_name || '';
+      const fullName = (firstName || lastName) ? `Dr. ${firstName} ${lastName}`.trim() : 'Dr. Dentist';
+      setDentistName(fullName);
+      
+      // Fetch dashboard stats
+      const response = await axios.get(`${API_BASE_URL}/api/dashboard/stats/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      setStats(response.data);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching dashboard stats:', err);
+      setError('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchDashboardStats = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem('access');
-        
-        // First fetch user profile to get the dentist's name
-        const userResponse = await axios.get(`${API_BASE_URL}/api/user/profile/`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        const firstName = userResponse.data.first_name || '';
-        const lastName = userResponse.data.last_name || '';
-        const fullName = (firstName || lastName) ? `Dr. ${firstName} ${lastName}`.trim() : 'Dr. Dentist';
-        setDentistName(fullName);
-        
-        // Then fetch dashboard stats
-        const response = await axios.get(`${API_BASE_URL}/api/dashboard/stats/`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        setStats(response.data);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching dashboard stats:', err);
-        setError('Failed to load dashboard data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDashboardStats();
   }, []);
+
+  // Handle appointment approval with local state update
+  const handleAppointmentAction = async (appointmentId: number, approved: boolean) => {
+    try {
+      setProcessingAppointment(appointmentId);
+      const token = localStorage.getItem('access');
+      
+      // Optimistically update the local state
+      setStats((prevStats) => {
+        if (!prevStats) return prevStats;
+        return {
+          ...prevStats,
+          appointments: prevStats.appointments.map((appt) =>
+            appt.id === appointmentId
+              ? { ...appt, approved, status: approved ? 'Approved' : 'Declined' }
+              : appt
+          ),
+        };
+      });
+
+      // Update the database
+      await axios.patch(
+        `${API_BASE_URL}/api/appointments/${appointmentId}/`,
+        { approved },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      // Refresh the dashboard data to ensure consistency
+      await fetchDashboardStats();
+      
+    } catch (err) {
+      console.error('Error updating appointment:', err);
+      // Revert optimistic update on error
+      await fetchDashboardStats();
+      alert('Failed to update appointment status. Please try again.');
+    } finally {
+      setProcessingAppointment(null);
+    }
+  };
+
+  // Render status control with correct status display
+  const renderStatusControl = (appointment: AppointmentData) => {
+    const isEditing = editingStatus === appointment.id;
+    const statusText = appointment.status;
+
+    return (
+      <div className="status-control">
+        <div className="status-display">
+          <span className={`appointment-status ${appointment.approved ? 'confirmed' : 'declined'}`}>
+            {statusText}
+          </span>
+          {processingAppointment === appointment.id ? (
+            <span className="processing-indicator">Processing...</span>
+          ) : (
+            <button
+              className="edit-status-btn"
+              onClick={() => setEditingStatus(isEditing ? null : appointment.id)}
+            >
+              Edit
+            </button>
+          )}
+        </div>
+
+        {isEditing && (
+          <div className="status-dropdown">
+            {statusOptions.map((option) => (
+              <div key={option} className="status-option">
+                <button
+                  className={`option-btn ${option === statusText ? 'selected' : ''}`}
+                  onClick={async () => {
+                    const newApproved = option === 'Approved';
+                    if (newApproved !== appointment.approved) {
+                      await handleAppointmentAction(appointment.id, newApproved);
+                    }
+                    setEditingStatus(null);
+                  }}
+                >
+                  {option}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Format data for pie chart
   const formatGenderData = (distribution: GenderDistribution | undefined) => {
@@ -129,17 +229,15 @@ const Dashboard: React.FC = () => {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        
         <div className="dashboard-welcome">
-          <h2> {dentistName}</h2>
-          
+          <h2>{dentistName}</h2>
         </div>
       </div>
 
       <div className="dashboard-stats">
         <div className="stat-card purple">
           <div className="stat-icon">
-            <i className="fas fa-calendar-check"></i>
+            <img src={appointmentLogo}alt="phone" style={{ width: '70px', height: '70px' }} />
           </div>
           <div className="stat-content">
             <h3>{stats?.total_appointments || '0'}</h3>
@@ -149,7 +247,7 @@ const Dashboard: React.FC = () => {
         
         <div className="stat-card pink">
           <div className="stat-icon">
-            <i className="fas fa-user"></i>
+          <img src={userLogo}alt="patient" style={{ width: '68px', height: '68px' }} />
           </div>
           <div className="stat-content">
             <h3>{stats?.total_patients || '0'}</h3>
@@ -161,22 +259,25 @@ const Dashboard: React.FC = () => {
       <div className="dashboard-content">
         <div className="dashboard-section">
           <div className="section-header">
-            <h3>Appointment Request</h3>
-            <a href="#" className="view-all">View All</a>
+            <h3>Appointment Requests</h3>
+            <a href="/patients" className="view-all">View All</a>
           </div>
           <div className="appointment-list">
             {stats?.appointments && stats.appointments.length > 0 ? (
               stats.appointments.map((appointment) => (
                 <div className="appointment-item" key={appointment.id}>
                   <div className="appointment-avatar">
-                    <img src={`/api/placeholder/48/48`} alt={appointment.patient_name} />
+                    <img src={defaultPic} alt={appointment.patient_name} />
                   </div>
                   <div className="appointment-details">
                     <h4>{appointment.patient_name}</h4>
                     <p>{appointment.gender}, {appointment.date}, {appointment.time}</p>
+                    {appointment.detail && (
+                      <p className="appointment-reason">Reason: {appointment.detail}</p>
+                    )}
                   </div>
-                  <div className={`appointment-status ${appointment.status === 'Confirmed' ? 'confirmed' : 'pending'}`}>
-                    {appointment.status}
+                  <div className="appointment-actions">
+                    {renderStatusControl(appointment)}
                   </div>
                 </div>
               ))
@@ -199,15 +300,15 @@ const Dashboard: React.FC = () => {
             <div className="patient-stats">
               <div className="patient-stat-item">
                 <div className="patient-icon">
-                  <i className="fas fa-user-plus"></i>
+                <img src={userLogo}alt="phone" style={{ width: '50px', height: '50px' }} />
                 </div>
                 <div className="patient-stat-details">
                   <h4>{stats?.new_patients_count || '0'}</h4>
                   <p>New Patients</p>
                 </div>
-                <div className="stat-change positive">↑ 15%</div>
+                <div className="stat-change positive">↑</div>
               </div>
-              <div className="patient-stat-item">
+              {/* <div className="patient-stat-item">
                 <div className="patient-icon">
                   <i className="fas fa-user-friends"></i>
                 </div>
@@ -216,7 +317,7 @@ const Dashboard: React.FC = () => {
                   <p>Returning Patients</p>
                 </div>
                 <div className="stat-change positive">↑ 15%</div>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -272,7 +373,7 @@ const Dashboard: React.FC = () => {
                 <tr key={patient.id}>
                   <td>
                     <div className="patient-name-cell">
-                      <img src={`/api/placeholder/40/40`} alt={patient.name} />
+                      <img src={defaultPic} alt={patient.name} />
                       <span>{patient.name}</span>
                     </div>
                   </td>
@@ -292,5 +393,4 @@ const Dashboard: React.FC = () => {
     </div>
   );
 };
-
 export default Dashboard;

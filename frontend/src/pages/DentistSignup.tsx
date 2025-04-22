@@ -39,13 +39,13 @@ interface HourOption {
 function DentistSignupPage() {
   // Options for dropdown menus
   const specializations: SpecializationOption[] = [
-    { value: 'general', label: 'General Dentistry' },
-    { value: 'orthodontics', label: 'Orthodontics' },
-    { value: 'periodontics', label: 'Periodontics' },
-    { value: 'endodontics', label: 'Endodontics' },
-    { value: 'oral surgery', label: 'Oral Surgery' },
-    { value: 'pediatric', label: 'Pediatric Dentistry' },
-    { value: 'prosthodontics', label: 'Prosthodontics' }
+    { value: 'General', label: 'General Dentistry' },
+    { value: 'Orthodontics', label: 'Orthodontics' },
+    { value: 'Periodontics', label: 'Periodontics' },
+    { value: 'Endodontics', label: 'Endodontics' },
+    { value: 'Oral Surgery', label: 'Oral Surgery' },
+    { value: 'Pediatric', label: 'Pediatric Dentistry' },
+    { value: 'Prosthodontics', label: 'Prosthodontics' }
   ];
 
   const experiences: ExperienceOption[] = [

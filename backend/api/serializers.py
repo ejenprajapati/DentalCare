@@ -86,6 +86,11 @@ class ImageAnalysisSerializer(serializers.ModelSerializer):
 
 
 
+# api/serializers.py
+from rest_framework import serializers
+from .models import Appointment, Patient, Dentist, ImageAnalysis
+from .serializers import ImageAnalysisSerializer
+
 class AppointmentSerializer(serializers.ModelSerializer):
     patient = serializers.PrimaryKeyRelatedField(queryset=Patient.objects.all())
     dentist = serializers.PrimaryKeyRelatedField(queryset=Dentist.objects.all())
@@ -96,35 +101,35 @@ class AppointmentSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True
     )
+    patient_name = serializers.SerializerMethodField()
+    dentist_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Appointment
         fields = [
             'id', 'detail', 'date', 'start_time', 'end_time',
             'approved', 'patient', 'dentist', 'created_at',
-            'analyzed_image', 'analyzed_image_id', 'treatment'
+            'analyzed_image', 'analyzed_image_id', 'treatment',
+            'patient_name', 'dentist_name'  # Ensure these are included
         ]
 
+    def get_patient_name(self, obj):
+        return f"{obj.patient.user.first_name} {obj.patient.user.last_name}".strip() or "Unknown Patient"
+
+    def get_dentist_name(self, obj):
+        return f"{obj.dentist.user.first_name} {obj.dentist.user.last_name}".strip() or "Unknown Dentist"
+
     def validate(self, data):
-        """
-        Custom validation to handle the comparison that was causing errors.
-        """
-        # Check if this is a partial update for just the treatment field
         if self.partial and set(data.keys()) == {'treatment'}:
-            # Skip other validations if we're only updating the treatment
             return data
-            
-        # Get the start and end times, either from validated data or original instance
         instance = self.instance
         start_time = data.get('start_time', instance.start_time if instance else None)
         end_time = data.get('end_time', instance.end_time if instance else None)
-        
-        # Only do comparison if both times are provided
         if start_time is not None and end_time is not None:
             if start_time >= end_time:
                 raise serializers.ValidationError({"end_time": "End time must be after start time."})
-        
         return data
+    
 class PatientSerializer(serializers.ModelSerializer):
     user = SimpleUserSerializer(read_only=True)
     id = serializers.IntegerField(source='user_id', read_only=True)

@@ -44,7 +44,7 @@ class User(AbstractUser):
         ('other', 'Other'),
     )
     profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
-    profile_picture_url = models.CharField(max_length=255, default="none")
+    profile_picture_url = models.CharField(max_length=255, default="/media/profile_pictures/default.jpg")
 
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)

@@ -1,0 +1,218 @@
+/* PatientAppointments.css */
+
+/* Main container */
+.appointments-container {
+    padding: 40px; /* Increased from 20px */
+    margin-bottom: 60px; /* Added to create space above footer */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: calc(100vh - 200px); /* Ensure container takes up enough height to push footer down */
+  }
+  
+  /* Title */
+  .appointments-title {
+    color: #2c3e50;
+    margin-bottom: 30px;
+    font-size: 28px;
+    text-align: center; /* Added to center the title */
+  }
+  
+  /* Actions section */
+  .appointments-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    padding: 15px 0;
+  }
+  
+  /* Primary button */
+  .btn-primary {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 14px 28px; /* Increased from 10px 20px */
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+  }
+  
+  .btn-primary:hover {
+    background-color: #2980b9;
+  }
+  
+  /* Search input */
+  .search-container input {
+    padding: 12px 16px; /* Increased from 8px 12px */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 300px; /* Slightly increased from 250px */
+    font-size: 14px;
+    margin: 10px 0; /* Added margin for spacing */
+  }
+  
+  /* Table container */
+  .table-container {
+    overflow-x: auto;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin: 20px 0; /* Added margin for spacing */
+    padding: 20px; /* Added padding inside the container */
+  }
+  
+  /* Table */
+  .appointments-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+  }
+  
+  .appointments-table th,
+  .appointments-table td {
+    padding: 18px 22px; /* Increased from 12px 15px */
+    text-align: left;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .appointments-table th {
+    background-color: #f8f9fa;
+    color: #495057;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  
+  .appointments-table tr:hover {
+    background-color: #f9f9f9;
+  }
+  
+  /* Dentist info */
+  .dentist-info {
+    display: flex;
+    flex-direction: column;
+    margin: 10px 0; /* Added margin for spacing */
+  }
+  
+  .dentist-name {
+    font-weight: 500;
+    color: #2c3e50;
+  }
+  
+  .dentist-email {
+    font-size: 12px;
+    color: #7f8c8d;
+    margin-top: 4px; /* Increased from 2px */
+  }
+  
+  /* View image button */
+  .btn-view-image {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 8px 14px; /* Increased from 5px 10px */
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  
+  .btn-view-image:hover {
+    background-color: #219653;
+  }
+  
+  /* Status badge */
+  .status-badge {
+    display: inline-block;
+    padding: 8px 14px; /* Increased from 5px 10px */
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    margin: 5px; /* Added margin for spacing */
+  }
+  
+  .status-badge.approved {
+    background-color: #e3fcef;
+    color: #1d9d74;
+  }
+  
+  .status-badge.pending {
+    background-color: #fff8e1;
+    color: #f2994a;
+  }
+  
+  /* Loading state */
+  .loading {
+    text-align: center;
+    padding: 60px; /* Increased from 40px */
+    font-size: 16px;
+    color: #7f8c8d;
+  }
+  
+  /* Error state */
+  .error {
+    text-align: center;
+    padding: 60px; /* Increased from 40px */
+    font-size: 16px;
+    color: #e74c3c;
+    background-color: #fdf2f2;
+    border-radius: 8px;
+    margin: 20px 0; /* Added margin for spacing */
+  }
+  
+  /* No appointments message */
+  .no-appointments {
+    text-align: center;
+    padding: 50px !important; /* Increased from 30px */
+    color: #7f8c8d;
+    margin: 20px 0; /* Added margin for spacing */
+  }
+  
+  /* Ensure footer is pushed down */
+  .patient-appointments-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Full viewport height */
+  }
+  
+  footer {
+    margin-top: auto; /* Push footer to the bottom */
+    padding: 20px;
+    background-color: #2c3e50;
+    color: white;
+    text-align: center;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 992px) {
+    .appointments-container {
+      padding: 20px; /* Reduced padding for smaller screens */
+      margin-bottom: 40px; /* Adjusted margin */
+    }
+  
+    .appointments-actions {
+      flex-direction: column;
+      gap: 15px; /* Increased from 10px */
+      padding: 10px 0;
+    }
+  
+    .search-container {
+      width: 100%;
+    }
+  
+    .search-container input {
+      width: 100%;
+      padding: 10px 14px; /* Adjusted for smaller screens */
+    }
+  
+    .table-container {
+      padding: 15px; /* Adjusted for smaller screens */
+      margin: 15px 0;
+    }
+  
+    .appointments-table th,
+    .appointments-table td {
+      padding: 14px 18px; /* Adjusted for smaller screens */
+    }
+  
+    .no-appointments {
+      padding: 40px !important;
+    }
+  }

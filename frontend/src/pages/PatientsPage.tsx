@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import '../components/PatientsPage.css';
 
 interface Patient {
   id: number;
@@ -72,7 +73,7 @@ const PatientsPage: React.FC = () => {
   const navigate = useNavigate();
   const BASE_URL = 'http://127.0.0.1:8000';
 
-  const treatmentOptions = [
+  const treatmentOptions = ["Pending",
     "Regular Checkup", "Teeth Cleaning", "Toothache", "Cavity/Filling",
     "Teeth Whitening", "Root Canal", "Crown/Bridge Work", "Dentures",
     "Implants", "Wisdom Teeth", "Orthodontic Consultation",
@@ -285,28 +286,9 @@ const PatientsPage: React.FC = () => {
     <div className="patients-container">
       <div className="patients-header">
         <h1>APPOINTMENTS</h1>
-        <div className="total-appointments">
-          <span>Total appointments</span>
-          <div className="appointments-count">{appointmentRows.length}</div>
-        </div>
       </div>
       
-      <div className="patients-controls">
-        <div className="controls-left">
-          <button className="grid-view-btn">
-            <i className="grid-icon"></i>
-          </button>
-          <button className="print-btn">
-            <i className="print-icon"></i>
-          </button>
-          <div className="filters-dropdown">
-            <button className="filters-btn">
-              <i className="filter-icon"></i>
-              Filters
-            </button>
-          </div>
-        </div>
-        
+      <div className="search-and-sort">
         <div className="search-container">
           <input 
             type="text" 
@@ -316,18 +298,17 @@ const PatientsPage: React.FC = () => {
             className="search-input"
           />
         </div>
-      </div>
-      
-      <div className="sort-controls">
-        <span>Sort by:</span>
-        <select 
-          value={sortBy} 
-          onChange={(e) => setSortBy(e.target.value)}
-          className="sort-dropdown"
-        >
-          <option value="date">Appointment Date</option>
-          <option value="patient">Patient Name</option>
-        </select>
+        <div className="sort-controls">
+          <span>Sort by:</span>
+          <select 
+            value={sortBy} 
+            onChange={(e) => setSortBy(e.target.value)}
+            className="sort-dropdown"
+          >
+            <option value="date">Appointment Date</option>
+            <option value="patient">Patient Name</option>
+          </select>
+        </div>
       </div>
       
       <div className="patients-table">
@@ -377,19 +358,18 @@ const PatientsPage: React.FC = () => {
                 )}
               </div>
               <div className="cell">
-              <button 
-                className="set-appointment-btn"
-                onClick={() => handleSetAppointment(row.patientId)}
+                <button 
+                  className="set-appointment-btn"
+                  onClick={() => handleSetAppointment(row.patientId)}
                 >
-                Set Appointment
-                 </button>
+                  Set Appointment
+                </button>
               </div>
             </div>
           ))
         )}
       </div>
     </div>
-  );
+);
 };
-
 export default PatientsPage;

@@ -151,11 +151,13 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         if user.is_authenticated:
             if user.role == 'patient':
                 return Appointment.objects.filter(patient=user.patient).select_related(
-                    'analyzed_image', 'analyzed_image__original_image', 'patient__user', 'dentist__user'
+                    'analyzed_image', 'analyzed_image__original_image', 
+                    'patient__user', 'dentist__user'  # Make sure these are included
                 ).prefetch_related('analyzed_image__diseases')
             elif user.role == 'dentist':
                 return Appointment.objects.filter(dentist=user.dentist).select_related(
-                    'analyzed_image', 'analyzed_image__original_image', 'patient__user', 'dentist__user'
+                    'analyzed_image', 'analyzed_image__original_image', 
+                    'patient__user', 'dentist__user'  # Make sure these are included
                 ).prefetch_related('analyzed_image__diseases')
         return Appointment.objects.none()
 
@@ -499,15 +501,13 @@ class DashboardStatsView(APIView):
             appointment__dentist=dentist
         ).distinct().count()
         
-        # Get today's appointments
-        today_appointments = Appointment.objects.filter(
-            dentist=dentist,
-            date=today
+        all_appointments = Appointment.objects.filter(
+            dentist=dentist
         ).select_related('patient__user')
         
         # Format appointments for the response
         appointment_list = []
-        for appointment in today_appointments:
+        for appointment in all_appointments:
             patient_user = appointment.patient.user
             appointment_list.append({
                 'id': appointment.id,

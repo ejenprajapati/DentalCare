@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import uploadLogo from '../assets/upload-logo.png';
 
 const AICheckup: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -83,7 +84,7 @@ const AICheckup: React.FC = () => {
             <img src={imagePreview} alt="Preview" />
           ) : (
             <div className="upload-placeholder">
-              <img src="/upload-icon.png" alt="Upload" />
+              <img src={uploadLogo} alt="Upload" />
               <h3>CHOOSE IMAGE</h3>
             </div>
           )}

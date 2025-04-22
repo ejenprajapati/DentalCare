@@ -42,6 +42,11 @@ interface CalendarSettings {
   endHour: number;
 }
 
+interface AppointmentCalendarProps {
+  patientId?: number | null;  // Optional - to filter appointments for a specific patient
+  readOnly?: boolean;         // Optional - to disable editing/adding appointments
+}
+
 const timeSlots = Array.from({ length: 10 }, (_, i) => 9 + i);
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
@@ -78,7 +83,7 @@ const timeToDecimal = (timeString: string): number => {
   return hours + minutes / 60;
 };
 
-const AppointmentCalendar: React.FC = () => {
+const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({ patientId, readOnly = false }) => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [appointments, setAppointments] = useState<AppointmentWithPosition[]>([]);
   const [settings, setSettings] = useState<CalendarSettings>({
@@ -95,7 +100,7 @@ const AppointmentCalendar: React.FC = () => {
 
   useEffect(() => {
     fetchAppointments();
-  }, [currentDate]);
+  }, [currentDate, patientId]);
 
   const fetchAppointments = async () => {
     setLoading(true);
@@ -115,11 +120,18 @@ const AppointmentCalendar: React.FC = () => {
         return;
       }
       
+      // Add patientId to params if provided
+      const params: any = {
+        start_date: startDateStr,
+        end_date: endDateStr,
+      };
+      
+      if (patientId) {
+        params.patient = patientId;
+      }
+      
       const response = await axios.get(`${API_BASE_URL}/api/appointments/`, {
-        params: {
-          start_date: startDateStr,
-          end_date: endDateStr,
-        },
+        params,
         headers: {
           Authorization: `Bearer ${token}`
         },
@@ -205,17 +217,21 @@ const AppointmentCalendar: React.FC = () => {
           <button className="action-button refresh-button" onClick={fetchAppointments}>
             <RefreshCw size={18} />
           </button>
-          <button className="action-button print-button">
-            <Printer size={18} />
-          </button>
-          <button className="action-button filter-button">
-            <Filter size={18} />
-            <span>Filters</span>
-          </button>
-          <button className="action-button settings-button">
-            <Settings size={18} />
-            <span>Calendar Settings</span>
-          </button>
+          {!readOnly && (
+            <>
+              <button className="action-button print-button">
+                <Printer size={18} />
+              </button>
+              <button className="action-button filter-button">
+                <Filter size={18} />
+                <span>Filters</span>
+              </button>
+              <button className="action-button settings-button">
+                <Settings size={18} />
+                <span>Calendar Settings</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -251,26 +267,32 @@ const AppointmentCalendar: React.FC = () => {
                 
                 {/* Render appointments for this day */}
                 {appointments
-                  .filter(appt => isSameDay(new Date(appt.date), date))
-                  .map(appointment => (
-                    <div
-                      key={appointment.id}
-                      className={getAppointmentClassName(appointment)}
-                      style={{
-                        top: `${appointment.top}px`,
-                        height: `${appointment.height}px`,
-                        backgroundColor: treatmentColors[getTreatmentType(appointment.detail) as keyof typeof treatmentColors]
-                      }}
-                      onClick={() => showAppointmentDetails(appointment)}
-                    >
-                      <div className="appt-time">
-                        {appointment.start_time.substring(0, 5)} - {appointment.end_time.substring(0, 5)}
-                      </div>
-                      <div className="appt-patient">{appointment.patient_name}</div>
-                      <div className="appt-type">{getTreatmentType(appointment.detail)}</div>
-                    </div>
-                  ))
-                }
+                    .filter(appt => isSameDay(new Date(appt.date), date))
+                    .map(appointment => (
+                        <div
+                        key={appointment.id}
+                        className={getAppointmentClassName(appointment)}
+                        style={{
+                            top: `${appointment.top}px`,
+                            height: `${appointment.height}px`,
+                            backgroundColor: treatmentColors[getTreatmentType(appointment.detail) as keyof typeof treatmentColors]
+                        }}
+                        onClick={() => showAppointmentDetails(appointment)}
+                        >
+                        <div className="appt-time">
+                            {appointment.start_time.substring(0, 5)} - {appointment.end_time.substring(0, 5)}
+                        </div>
+                        {/* For patient view, show dentist name instead of patient name */}
+                        <div className="appt-person">
+                            {patientId 
+                              ? `Dr. ${appointment.dentist_name || 'Assigned Dentist'}`
+                              : appointment.patient_name || `Patient #${appointment.patient}`
+                            }
+                        </div>
+                        <div className="appt-type">{getTreatmentType(appointment.detail)}</div>
+                        </div>
+                    ))
+                    }
               </div>
             ))}
           </div>
@@ -290,12 +312,16 @@ const AppointmentCalendar: React.FC = () => {
             <div className="modal-header">
               <h3>{getTreatmentType(activeAppointment.detail)}</h3>
               <div className="modal-actions">
-                <button className="modal-action-button">
-                  <Edit size={16} />
-                </button>
-                <button className="modal-action-button">
-                  <MoreVertical size={16} />
-                </button>
+                {!readOnly && (
+                  <>
+                    <button className="modal-action-button">
+                      <Edit size={16} />
+                    </button>
+                    <button className="modal-action-button">
+                      <MoreVertical size={16} />
+                    </button>
+                  </>
+                )}
                 <button className="modal-close" onClick={hideAppointmentDetails}>
                   <X size={16} />
                 </button>
@@ -309,10 +335,17 @@ const AppointmentCalendar: React.FC = () => {
                   {activeAppointment.start_time.substring(0, 5)} - {activeAppointment.end_time.substring(0, 5)}
                 </span>
               </div>
-              <div className="detail-row">
-                <span className="detail-label">Patient:</span>
-                <span>{activeAppointment.patient_name}</span>
-              </div>
+              {patientId ? (
+                <div className="detail-row">
+                  <span className="detail-label">Dentist:</span>
+                  <span>Dr. {activeAppointment.dentist_name || 'Assigned Dentist'}</span>
+                </div>
+              ) : (
+                <div className="detail-row">
+                  <span className="detail-label">Patient:</span>
+                  <span>{activeAppointment.patient_name}</span>
+                </div>
+              )}
               <div className="detail-row">
                 <span className="detail-label">Status:</span>
                 <span className={`status ${activeAppointment.approved ? 'approved' : 'pending'}`}>

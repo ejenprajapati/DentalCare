@@ -3,6 +3,10 @@ import { Link } from 'react-router-dom';
 import aiRobot from '../assets/ai-robot.png';
 import dentistImage from '../assets/dentist_pic.jpg';
 import { useNavigate } from 'react-router-dom';
+import rootCanalImage from '../assets/rootcanal.png';
+import cosmeticDentistryImage from '../assets/cosmetic-dentistry.png';
+import implantsImage from '../assets/implants.jpg';
+import phoneLogo from '../assets/phone.png';
 
 
 function HomePage() {
@@ -24,12 +28,13 @@ function HomePage() {
             <div className="hero-buttons">
               <Link to="/ai-checkup" className="btn btn-primary">Get AI Analysis</Link>
               <div className="emergency-contact">
-                <div className="phone-icon">
-                  <i className="fas fa-phone"></i>
+                <div>
+                <img src={phoneLogo}alt="phone" style={{ width: '50px', height: '50px' }} />
                 </div>
                 <div>
-                  <p>Dental 24H Emergency</p>
-                  <p>Contact <strong>Number</strong></p>
+                  <br></br>
+                  <p>Dental 24H Emergency<br></br>
+                  Contact: <strong>9841-XX-XX-XX</strong></p>
                 </div>
               </div>
             </div>
@@ -46,7 +51,7 @@ function HomePage() {
           <div className="service-cards">
             <div className="service-card">
               <div className="service-icon">
-                <img src="/icons/root-canal.svg" alt="Root Canal" />
+                <img src={rootCanalImage} alt="Root Canal" />
               </div>
               <h3>Root Canal Treatment</h3>
               <p>
@@ -58,7 +63,7 @@ function HomePage() {
             
             <div className="service-card">
               <div className="service-icon">
-                <img src="/icons/cosmetic.svg" alt="Cosmetic Dentist" />
+                <img src={cosmeticDentistryImage} alt="Cosmetic Dentist" />
               </div>
               <h3>Cosmetic Dentist</h3>
               <p>
@@ -70,7 +75,7 @@ function HomePage() {
             
             <div className="service-card">
               <div className="service-icon">
-                <img src="/icons/implants.svg" alt="Dental Implants" />
+                <img src={implantsImage} alt="Dental Implants" />
               </div>
               <h3>Dental Implants</h3>
               <p>

@@ -183,7 +183,7 @@ const AppointmentPage: React.FC = () => {
   }, [location]);
 
   useEffect(() => {
-    const fetchAnalyzedImages = async () => {
+    const fetchAnalyzedImages = async () => {   
       if (userProfile?.role !== 'patient') return;
 
       try {

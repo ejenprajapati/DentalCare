@@ -17,7 +17,9 @@ import Results from './pages/Results';
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Patient from "./pages/PatientsPage";
+import PatientAppointment from "./pages/PatientAppointment";
 import AnalysisHistory from './pages/AnalysisHistory';
+import MyAppointments from './pages/MyAppointments';
 import './App.css';
 
 function Logout() {
@@ -28,6 +30,7 @@ function Logout() {
 function RegisterAndLogout() {
   localStorage.clear();
   return <Navigate to="/login" />;
+  
 }
 
 function App() {
@@ -69,6 +72,16 @@ function App() {
           <Route path="/profile" element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          } />
+           <Route path="/my-appointments" element={
+            <ProtectedRoute>
+              <PatientAppointment />
+            </ProtectedRoute>
+          } />
+          <Route path="/patient-appointments" element={
+            <ProtectedRoute>
+              <MyAppointments />
             </ProtectedRoute>
           } />
           

@@ -609,3 +609,13 @@ class ChangePasswordView(APIView):
         user.save()
         
         return Response({'success': True})
+class CheckUsernameView(APIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        username = request.query_params.get('username', '')
+        if not username:
+            return Response({'error': 'Username parameter is required'}, status=400)
+            
+        exists = User.objects.filter(username=username).exists()
+        return Response({'exists': exists})

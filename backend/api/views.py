@@ -275,6 +275,7 @@ class WorkScheduleViewSet(viewsets.ModelViewSet):
 class AnalyzeImageView(APIView):
     parser_classes = (MultiPartParser, FormParser)
     permission_classes = [IsAuthenticated]
+
     def get_queryset(self):
         user = self.request.user
         if user.is_authenticated:
@@ -284,27 +285,24 @@ class AnalyzeImageView(APIView):
                 return Appointment.objects.filter(patient=user.patient_profile)
         return Appointment.objects.none()
 
-    def perform_create(self, serializer):
-        serializer.save()
-    
     def post(self, request, *args, **kwargs):
         print("AnalyzeImageView post method called!")
         image_file = request.FILES.get('image')
+        image_type = request.POST.get('image_type', 'normal')
+        
         if not image_file:
             return Response(
                 {'error': 'No image provided'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
-        print("Processing uploaded image")
+        print(f"Processing uploaded {image_type} image")
         
         try:
-            # Save the original image to our database with URL
-            original_dental_image = DentalImage.objects.create(
-                image=image_file
-            )
-            # Update the image_url after save to get the correct URL
+            # Save the original image
+            original_dental_image = DentalImage.objects.create(image=image_file)
             original_dental_image.image_url = original_dental_image.image.url
             original_dental_image.save()
+            print("Original image saved")
             
             # Save uploaded image to temporary file
             with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_file:
@@ -312,13 +310,36 @@ class AnalyzeImageView(APIView):
                     temp_file.write(chunk)
                 temp_file_path = temp_file.name
             
-            # Load the YOLO model
+            # Load the appropriate YOLO model
             BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            model_path = os.path.join(BASE_DIR, 'model', 'best_model.pt')
-            print(f"Attempting to load model from: {os.path.abspath(model_path)}")
+            
+            if image_type == 'xray':
+                model_path = os.path.join(BASE_DIR, 'model', 'x-ray_model.pt')
+                class_names = ['cavity', 'fillings', 'impacted_tooth', 'implant']
+                colors = {
+                    "cavity": "#FF0000",
+                    "fillings": "#0000FF",
+                    "impacted_tooth": "#00FF00",
+                    "implant": "#800080"
+                }
+            else:
+                model_path = os.path.join(BASE_DIR, 'model', 'best_model.pt')
+                class_names = ['calculus', 'caries', 'gingivitis', 'hypodontia', 'tooth_discolation', 'ulcer']
+                colors = {
+                    "calculus": "#FFD700",
+                    "caries": "#FF0000",
+                    "gingivitis": "#FF69B4",
+                    "hypodontia": "#800080",
+                    "tooth_discolation": "#A0522D",
+                    "ulcer": "#FFA500"
+                }
+            
+            print(f"Loading model from: {os.path.abspath(model_path)}")
+            class_counts = {name: 0 for name in class_names}
             
             try:
                 model = YOLO(model_path)
+                print(f"YOLO model class names: {model.names}")
             except Exception as e:
                 return Response(
                     {'error': f'Failed to load model: {str(e)}'}, 
@@ -327,151 +348,177 @@ class AnalyzeImageView(APIView):
             
             # Run inference
             results = model(temp_file_path)
-            
-            # Extract boxes
             boxes = results[0].boxes
             
-            # Define colors for each class
-            colors = {
-                "calculus": "#FFD700",  # Gold
-                "caries": "#FF0000",    # Red
-                "gingivitis": "#FF69B4", # Hot pink
-                "hypodontia": "#800080", # Purple
-                "tooth_discolation": "#A0522D", # Brown
-                "ulcer": "#FFA500"      # Orange
+            # Normalize class names
+            class_name_mapping = {
+                'calculuss': 'calculus',
+                'tooth_discolations': 'tooth_discolation',
+                'fillings': 'fillings',
+                'impacted tooth': 'impacted_tooth'
             }
-            
-            # Count detections for each class
-            class_counts = {
-                "calculus": 0,
-                "caries": 0,
-                "gingivitis": 0,
-                "hypodontia": 0,
-                "tooth_discolation": 0,
-                "ulcer": 0
-            }
-            
-            # Extract boxes for each class
-            class_boxes = {class_name: [] for class_name in class_counts.keys()}
+            class_boxes = {name: [] for name in class_names}
             
             # Process boxes and count detections
             for box in boxes:
                 class_index = int(box.cls.cpu().numpy()[0])
-                class_name = results[0].names[class_index].lower()  # Convert to lowercase for consistency
+                class_name = results[0].names[class_index].lower()
+                class_name = class_name_mapping.get(class_name, class_name)
                 
-                # Store box coordinates for each class
                 if class_name in class_counts:
                     box_coords = [int(v) for v in box.xyxy.cpu().numpy()[0]]
                     class_boxes[class_name].append(box_coords)
                     class_counts[class_name] += 1
+                else:
+                    print(f"Warning: Unrecognized class name {class_name}")
+            
+            print(f"Class counts: {class_counts}")
             
             # Draw boxes on image
             img = Image.open(temp_file_path)
             draw = ImageDraw.Draw(img)
             
-            # Draw boxes for each class with their respective colors
             for class_name, boxes_list in class_boxes.items():
                 for box in boxes_list:
                     draw.rectangle(box, outline=colors[class_name], width=3)
-                    # Add label to the box
                     draw.text((box[0], box[1] - 15), f"{class_name}: {class_counts[class_name]}", 
                             fill=colors[class_name])
             
+            # Convert image to RGB before saving as JPEG
+            if img.mode == 'RGBA':
+                img = img.convert('RGB')
+            
             # Save the annotated image
             annotated_img_path = temp_file_path + "_annotated.jpg"
-            img.save(annotated_img_path)
+            img.save(annotated_img_path, format='JPEG')
+            print("Annotated image saved to temporary file")
             
-            # Save the annotated image to Django file storage
+            # Save the annotated image to Django storage
             with open(annotated_img_path, 'rb') as f:
                 annotated_image_name = f"analyzed_{image_file.name}"
-                # Save the annotated image to the DentalImage model
                 analyzed_dental_image = DentalImage.objects.create(
                     image=ContentFile(f.read(), name=annotated_image_name)
                 )
-                # Update the image_url
                 analyzed_dental_image.image_url = analyzed_dental_image.image.url
                 analyzed_dental_image.save()
+            print("Annotated image saved to Django storage")
             
-                # Calculate total conditions detected
-                total_conditions = sum(class_counts.values())
-                
-                # Create an ImageAnalysis record with disease counts
-                analysis = ImageAnalysis.objects.create(
-                    user=request.user,
-                    original_image=original_dental_image,
-                    analyzed_image_url=analyzed_dental_image.image.url,
-                    total_conditions=total_conditions,
-                    calculus_count=class_counts["calculus"],
-                    caries_count=class_counts["caries"],
-                    gingivitis_count=class_counts["gingivitis"],
-                    hypodontia_count=class_counts["hypodontia"],
-                    tooth_discolation_count=class_counts["tooth_discolation"],
-                    ulcer_count=class_counts["ulcer"]
-                )
-                
-                # Get or create disease records for each detected condition
-                for disease_name, count in class_counts.items():
-                    if count > 0:
-                        # Convert snake_case to normal case for disease name
-                        display_name = disease_name.replace('_', ' ').capitalize()
-                        disease, created = Disease.objects.get_or_create(
-                            name=display_name,
-                            defaults={'description': f'AI detected {display_name}'}
-                        )
-                        
-                        # Create the ImageClassification relation with confidence
-                        analysis.diseases.add(
-                            disease, 
-                            through_defaults={'confidence': 0.9}  # Placeholder confidence
-                        )
+            # Calculate total conditions
+            total_conditions = sum(class_counts.values())
             
-            # Converting images to base64 for response
+            # Create ImageAnalysis record
+            analysis_data = {
+                'user': request.user,
+                'original_image': original_dental_image,
+                'analyzed_image_url': analyzed_dental_image.image.url,
+                'total_conditions': total_conditions,
+                'image_type': image_type
+            }
+            
+            if image_type == 'xray':
+                analysis_data.update({
+                    'calculus_count': 0,
+                    'caries_count': 0,
+                    'gingivitis_count': 0,
+                    'hypodontia_count': 0,
+                    'tooth_discolation_count': 0,
+                    'ulcer_count': 0,
+                    'cavity_count': class_counts.get('cavity', 0),
+                    'fillings_count': class_counts.get('fillings', 0),
+                    'impacted_tooth_count': class_counts.get('impacted_tooth', 0),
+                    'implant_count': class_counts.get('implant', 0)
+                })
+            else:
+                analysis_data.update({
+                    'calculus_count': class_counts.get('calculus', 0),
+                    'caries_count': class_counts.get('caries', 0),
+                    'gingivitis_count': class_counts.get('gingivitis', 0),
+                    'hypodontia_count': class_counts.get('hypodontia', 0),
+                    'tooth_discolation_count': class_counts.get('tooth_discolation', 0),
+                    'ulcer_count': class_counts.get('ulcer', 0),
+                    'cavity_count': 0,
+                    'fillings_count': 0,
+                    'impacted_tooth_count': 0,
+                    'implant_count': 0
+                })
+            
+            print(f"Creating ImageAnalysis with data: {analysis_data}")
+            analysis = ImageAnalysis.objects.create(**analysis_data)
+            print("ImageAnalysis created successfully")
+            
+            # Create disease records
+            for disease_name, count in class_counts.items():
+                if count > 0:
+                    display_name = disease_name.replace('_', ' ').capitalize()
+                    print(f"Creating disease: {display_name}")
+                    disease, created = Disease.objects.get_or_create(
+                        name=display_name,
+                        defaults={'description': f'AI detected {display_name}'}
+                    )
+                    analysis.diseases.add(disease, through_defaults={'confidence': 0.9})
+            
+            # Convert images to base64
             with open(temp_file_path, "rb") as img_file:
                 original_img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
             
             with open(annotated_img_path, "rb") as img_file:
                 analyzed_img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
             
-            # Prepare response data
+            # Prepare response
             response_data = {
                 'originalImage': f"data:image/jpeg;base64,{original_img_base64}",
                 'analyzedImage': f"data:image/jpeg;base64,{analyzed_img_base64}",
                 'totalConditionsDetected': total_conditions,
-                'analysisId': analysis.id  # Include the analysis ID for future reference
+                'analysisId': analysis.id,
+                'imageType': image_type
             }
             
-            # Add counts for each dental condition
-            for condition in class_counts.keys():
-                count = class_counts[condition]
-                
-                # Convert snake_case to camelCase for JSON response
-                if condition == "tooth_discolation":
-                    key = "toothDiscolation"
-                else:
-                    key = condition
-                
-                response_data[key + "Count"] = count
+            if image_type == 'xray':
+                response_data.update({
+                    'cavityCount': class_counts.get('cavity', 0),
+                    'fillingsCount': class_counts.get('fillings', 0),
+                    'impactedToothCount': class_counts.get('impacted_tooth', 0),
+                    'implantCount': class_counts.get('implant', 0),
+                    'calculusCount': 0,
+                    'cariesCount': 0,
+                    'gingivitisCount': 0,
+                    'hypodontiaCount': 0,
+                    'toothDiscolationCount': 0,
+                    'ulcerCount': 0
+                })
+            else:
+                response_data.update({
+                    'calculusCount': class_counts.get('calculus', 0),
+                    'cariesCount': class_counts.get('caries', 0),
+                    'gingivitisCount': class_counts.get('gingivitis', 0),
+                    'hypodontiaCount': class_counts.get('hypodontia', 0),
+                    'toothDiscolationCount': class_counts.get('tooth_discolation', 0),
+                    'ulcerCount': class_counts.get('ulcer', 0),
+                    'cavityCount': 0,
+                    'fillingsCount': 0,
+                    'impactedToothCount': 0,
+                    'implantCount': 0
+                })
             
             # Clean up temporary files
             os.unlink(temp_file_path)
             os.unlink(annotated_img_path)
             
-            # Return response
+            print("Returning response")
             return Response(response_data)
         
         except Exception as e:
-            # Clean up in case of error
+            import traceback
+            traceback.print_exc()
             if 'temp_file_path' in locals():
                 if os.path.exists(temp_file_path):
                     os.unlink(temp_file_path)
                 if os.path.exists(temp_file_path + "_annotated.jpg"):
                     os.unlink(temp_file_path + "_annotated.jpg")
-            
             return Response(
                 {'error': f'Error processing image: {str(e)}'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        
 class DashboardStatsView(APIView):
     permission_classes = [IsAuthenticated]
     

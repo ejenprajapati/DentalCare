@@ -79,10 +79,11 @@ class ImageAnalysisSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ImageAnalysis
-        fields = ['id', 'user', 'original_image', 'analyzed_image_url', 'created_at', 
-                  'diseases', 'total_conditions', 'calculus_count', 'caries_count', 
-                  'gingivitis_count', 'hypodontia_count', 'tooth_discolation_count', 
-                  'ulcer_count']
+        fields = ['id', 'user', 'original_image', 'analyzed_image_url', 'total_conditions',
+            'image_type', 'created_at',
+            'calculus_count', 'caries_count', 'gingivitis_count',
+            'hypodontia_count', 'tooth_discolation_count', 'ulcer_count',
+            'cavity_count', 'fillings_count', 'impacted_tooth_count', 'implant_count','diseases']
 
 
 

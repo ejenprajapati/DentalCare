@@ -169,6 +169,7 @@ class ImageAnalysis(models.Model):
     original_image = models.ForeignKey(DentalImage, on_delete=models.CASCADE)
     analyzed_image_url = models.CharField(max_length=255, default="none")
     created_at = models.DateTimeField(auto_now_add=True)
+    image_type = models.CharField(max_length=10, choices=[('normal', 'Normal'), ('xray', 'X-ray')], default='normal')
     diseases = models.ManyToManyField(Disease, through='ImageClassification')
     
     # New fields for disease counts
@@ -179,6 +180,11 @@ class ImageAnalysis(models.Model):
     hypodontia_count = models.IntegerField(default=0)
     tooth_discolation_count = models.IntegerField(default=0)
     ulcer_count = models.IntegerField(default=0)
+
+    cavity_count = models.IntegerField(default=0)
+    fillings_count = models.IntegerField(default=0)
+    impacted_tooth_count = models.IntegerField(default=0)
+    implant_count = models.IntegerField(default=0)
     
     def __str__(self):
         return f"Analysis {self.id} for {self.user.username}"

@@ -7,6 +7,7 @@ const AICheckup: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [imageType, setImageType] = useState<'normal' | 'xray'>('normal');
   const navigate = useNavigate();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,6 +40,7 @@ const AICheckup: React.FC = () => {
     // Create form data
     const formData = new FormData();
     formData.append('image', selectedFile);
+    formData.append('image_type', imageType);  // Add image type to the form data
 
     // Get auth token from localStorage or sessionStorage
     const token = localStorage.getItem('access'); // Adjust based on where you store your token
@@ -74,9 +76,34 @@ const AICheckup: React.FC = () => {
 
   return (
     <div className="container">
-      
-
       <h1 className="page-title">AI Checkup</h1>
+
+      <div className="image-type-selector">
+        <div className="radio-group">
+          <label className={`radio-label ${imageType === 'normal' ? 'selected' : ''}`}>
+            <input
+              type="radio"
+              name="imageType"
+              value="normal"
+              checked={imageType === 'normal'}
+              onChange={() => setImageType('normal')}
+            />
+            <span className="radio-custom"></span>
+            Normal Image
+          </label>
+          <label className={`radio-label ${imageType === 'xray' ? 'selected' : ''}`}>
+            <input
+              type="radio"
+              name="imageType"
+              value="xray"
+              checked={imageType === 'xray'}
+              onChange={() => setImageType('xray')}
+            />
+            <span className="radio-custom"></span>
+            X-ray Image
+          </label>
+        </div>
+      </div>
 
       <div className="upload-container">
         <div className="image-preview">
@@ -90,7 +117,9 @@ const AICheckup: React.FC = () => {
           )}
         </div>
 
-        <p className="image-type">Dental Image</p>
+        <p className="image-type">
+          {imageType === 'normal' ? 'Dental Image' : 'X-ray Image'}
+        </p>
 
         <div className="button-group">
           <input

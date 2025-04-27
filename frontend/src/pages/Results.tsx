@@ -80,9 +80,9 @@ const Results: React.FC = () => {
       <h1 className="page-title">Analysis Results</h1>
       
       <div className="results-layout">
-        <div className="image-type-indicator">
+        {/* <div className="image-type-indicator">
           {results.imageType === 'xray' ? 'X-Ray Image Analysis' : 'Normal Dental Image Analysis'}
-        </div>
+        </div> */}
         
         <div className="images-section">
           <div className="image-box">

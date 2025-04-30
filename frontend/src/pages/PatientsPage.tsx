@@ -68,7 +68,7 @@ const PatientsPage: React.FC = () => {
   const [appointmentRows, setAppointmentRows] = useState<AppointmentRow[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [sortBy, setSortBy] = useState<string>('date');
+  const [sortBy, setSortBy] = useState<string>('date-desc');
   const [editingTreatment, setEditingTreatment] = useState<number | null>(null);
   const navigate = useNavigate();
   const BASE_URL = 'http://127.0.0.1:8000';
@@ -274,8 +274,10 @@ const PatientsPage: React.FC = () => {
   
   // Sort rows
   filteredRows.sort((a, b) => {
-    if (sortBy === 'date') {
+    if (sortBy === 'date-desc') {
       return new Date(b.date).getTime() - new Date(a.date).getTime(); // newest first
+    } else if (sortBy === 'date-asc') {
+      return new Date(a.date).getTime() - new Date(b.date).getTime(); // oldest first
     } else if (sortBy === 'patient') {
       return a.patientName.localeCompare(b.patientName);
     }
@@ -305,7 +307,8 @@ const PatientsPage: React.FC = () => {
             onChange={(e) => setSortBy(e.target.value)}
             className="sort-dropdown"
           >
-            <option value="date">Appointment Date</option>
+            <option value="date-asc">Appointment Date </option>
+            <option value="date-desc">Appointment Date (Desc)</option>
             <option value="patient">Patient Name</option>
           </select>
         </div>
@@ -370,6 +373,7 @@ const PatientsPage: React.FC = () => {
         )}
       </div>
     </div>
-);
+  );
 };
+
 export default PatientsPage;

@@ -43,7 +43,7 @@ const AICheckup: React.FC = () => {
     formData.append('image_type', imageType);  // Add image type to the form data
 
     // Get auth token from localStorage or sessionStorage
-    const token = localStorage.getItem('access'); // Adjust based on where you store your token
+    const token = localStorage.getItem('access'); 
     
     try {
       // Post to the API with authentication token

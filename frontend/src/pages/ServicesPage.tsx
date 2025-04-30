@@ -62,7 +62,7 @@ const ServicesPage: React.FC = () => {
 
     const fetchCurrentUser = async (): Promise<void> => {
       try {
-        // Assuming you have a JWT token stored in localStorage
+        
         const token = localStorage.getItem('access');
         if (!token) {
           return;
@@ -133,7 +133,7 @@ const ServicesPage: React.FC = () => {
   ];
 
   const handleManageSpecialists = () => {
-    // Add your navigation or modal logic here for managing specialists
+    
     window.location.href = '/dentist-signup/';
   };
 
@@ -142,10 +142,7 @@ const ServicesPage: React.FC = () => {
       <section className="page-hero">
         <div className="container">
           <h1>Services</h1>
-          {/* <p className="service-intro">
-            We use only the best quality materials on the market in
-            order to provide the best products to our patients.
-          </p> */}
+        
         </div>
       </section>
 

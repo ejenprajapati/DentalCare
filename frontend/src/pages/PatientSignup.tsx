@@ -71,8 +71,7 @@ function PatientSignupPage() {
     try {
       const response = await api.get(`/api/user/check-username/?username=${username}`);
       
-      // If API doesn't exist, simulate check by assuming username is taken if it matches these examples
-      // In a real implementation, this would be an actual API call to the backend
+     
       const isUsernameTaken = 
         ['admin', 'test', 'user', 'patient1', 'dentist'].includes(username.toLowerCase());
       
@@ -148,14 +147,14 @@ function PatientSignupPage() {
       }
     }
 
-    // Keep existing username error if we have one (from API)
+    
     if (errors.username && errors.username === "Username already taken") {
       newErrors.username = errors.username;
     }
 
     setErrors(prev => ({
       ...newErrors,
-      // Preserve username error from API check if it exists
+      
       ...(prev.username === "Username already taken" ? { username: prev.username } : {})
     }));
     
@@ -216,8 +215,7 @@ function PatientSignupPage() {
     try {
       setLoading(true);
 
-      // This is where you would check username availability one last time
-      // For demonstration, using our simulated check
+      
       const isUsernameTaken = 
         ['admin', 'test', 'user', 'patient1', 'dentist'].includes(formData.username.toLowerCase());
       
@@ -241,6 +239,9 @@ function PatientSignupPage() {
         emergency_contact: formData.emergencyContact,
         allergies: formData.allergies
       };
+      if(requestData.allergies==""){
+        requestData.allergies="None"
+      }
         
       // Call patient registration endpoint
       await api.post("/api/user/register/patient/", requestData);

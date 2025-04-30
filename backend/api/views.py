@@ -2,9 +2,9 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework import generics
-from .serializers import UserSerializer, BlogSerializer
+from .serializers import UserSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Blog
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -30,15 +30,15 @@ from datetime import datetime, timedelta
 from .models import (
     User, Dentist, Patient, DentalImage, Disease, 
     ImageAnalysis, Appointment, Treatment, 
-    WorkSchedule, Blog, Comment
+    WorkSchedule, 
 )
 from .serializers import (
     UserSerializer, DentistSerializer, PatientSerializer, 
     RegisterDentistSerializer, RegisterPatientSerializer,
     DentalImageSerializer, DiseaseSerializer, 
     ImageAnalysisSerializer, AppointmentSerializer,
-    TreatmentSerializer, WorkScheduleSerializer, 
-    BlogSerializer, CommentSerializer
+    TreatmentSerializer, WorkScheduleSerializer
+   
 )
 from django.contrib.auth import get_user_model
 
@@ -47,7 +47,7 @@ from django.core.files.base import ContentFile
 from django.contrib.auth import authenticate
 
 User = get_user_model()  
-# Keep your existing AnalyzeImageView
+
 
 # User Registration
 
@@ -96,21 +96,14 @@ class UserProfileView(generics.RetrieveUpdateDestroyAPIView):
 # Dentist Views
 class DentistViewSet(viewsets.ModelViewSet):
     serializer_class = DentistSerializer
-    # permission_classes = [AllowAny]
     
-    
-    # def get_queryset(self):
-    #     if self.request.user.role == 'dentist':
-    #         return Dentist.objects.filter(user=self.request.user)
-    #     else:
-    #         return Dentist.objects.all()
     def get_queryset(self):
         
         return Dentist.objects.all()
     
     def get_permissions(self):
         if self.action == 'list' or self.action == 'retrieve':
-            # Allow anyone to view the list of dentists
+            
             permission_classes = [AllowAny]
         else:
             # Require authentication for create, update, delete
@@ -118,7 +111,7 @@ class DentistViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
 # Patient Views
-# api/views.py (partial update)
+
 
 class PatientViewSet(viewsets.ModelViewSet):
     serializer_class = PatientSerializer
@@ -152,12 +145,12 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             if user.role == 'patient':
                 return Appointment.objects.filter(patient=user.patient).select_related(
                     'analyzed_image', 'analyzed_image__original_image', 
-                    'patient__user', 'dentist__user'  # Make sure these are included
+                    'patient__user', 'dentist__user'  
                 ).prefetch_related('analyzed_image__diseases')
             elif user.role == 'dentist':
                 return Appointment.objects.filter(dentist=user.dentist).select_related(
                     'analyzed_image', 'analyzed_image__original_image', 
-                    'patient__user', 'dentist__user'  # Make sure these are included
+                    'patient__user', 'dentist__user' 
                 ).prefetch_related('analyzed_image__diseases')
         return Appointment.objects.none()
 
@@ -186,7 +179,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save()
     
-    # Add this method to handle PATCH requests
+    
     def partial_update(self, request, *args, **kwargs):
         """
         Handle PATCH requests to update an appointment partially.
@@ -212,50 +205,28 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['patch'])
     def approve(self, request, pk=None):
-        appointment = self.get_object()
-        if request.user.role != 'dentist' or request.user.dentist != appointment.dentist:
+        try:
+            
+            appointment = Appointment.objects.get(pk=pk)
+            
+            
+            if request.user.role != 'dentist' or request.user.dentist != appointment.dentist:
+                return Response(
+                    {"error": "Only the assigned dentist can approve appointments"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            appointment.approved = True
+            appointment.save()
+            return Response({"status": "appointment approved"})
+        except Appointment.DoesNotExist:
             return Response(
-                {"error": "Only the assigned dentist can approve appointments"},
-                status=status.HTTP_403_FORBIDDEN
+                {"error": "Appointment not found"},
+                status=status.HTTP_404_NOT_FOUND
             )
-        
-        appointment.approved = True
-        appointment.save()
-        return Response({"status": "appointment approved"})
     
-# Blog Views
-class BlogViewSet(viewsets.ModelViewSet):
-    serializer_class = BlogSerializer
-    
-    def get_queryset(self):
-        return Blog.objects.all().order_by('-created_at')
-    
-    def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
-            permission_classes = [AllowAny]
-        else:
-            permission_classes = [IsAuthenticated]
-        return [permission() for permission in permission_classes]
-    
-    def perform_create(self, serializer):
-        user = self.request.user
-        if user.role != 'dentist':
-            raise PermissionError("Only dentists can create blogs")
-        serializer.save(dentist=user.dentist)
 
-# Comment Views
-class CommentViewSet(viewsets.ModelViewSet):
-    serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
-    
-    def get_queryset(self):
-        blog_id = self.kwargs.get('blog_pk')
-        return Comment.objects.filter(blog_id=blog_id)
-    
-    def perform_create(self, serializer):
-        blog_id = self.kwargs.get('blog_pk')
-        blog = get_object_or_404(Blog, id=blog_id)
-        serializer.save(user=self.request.user, blog=blog)
+
 
 # Work Schedule Views
 class WorkScheduleViewSet(viewsets.ModelViewSet):
@@ -585,7 +556,7 @@ class DashboardStatsView(APIView):
                 recent_patients_list.append({
                     'id': patient_user.id,
                     'name': f"{patient_user.first_name} {patient_user.last_name}",
-                    # 'visit_id': f"{'OPD' if patient.emergency_contact else 'IPD'}-{1000 + patient_user.id}",
+                    
                     'visit_id': visit_id,
                     'date': last_visit.date.strftime('%m/%d/%y'),
                     'gender': patient_user.gender or 'Unknown'  # Get actual gender from User model
@@ -605,7 +576,7 @@ class DashboardStatsView(APIView):
         
         for patient in patients_with_appointments:
             user_gender = patient.user.gender
-            # Determine if the patient is a child (you may want to adjust this logic)
+            
             
             if user_gender == 'male':
                 gender_counts['male'] += 1
@@ -666,3 +637,13 @@ class CheckUsernameView(APIView):
             
         exists = User.objects.filter(username=username).exists()
         return Response({'exists': exists})
+    def post(self, request):
+        username = request.data.get('username')
+        if not username:
+            return Response({"detail": "Username is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user_exists = User.objects.filter(username=username).exists()
+        if user_exists:
+            return Response({"exists": True}, status=status.HTTP_200_OK)
+        else:
+            return Response({"exists": False}, status=status.HTTP_404_NOT_FOUND)

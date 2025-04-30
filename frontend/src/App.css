@@ -347,6 +347,32 @@ body {
   border: 1px solid #ff4d4f !important;
   box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
 }
+.password-input-container {
+  position: relative;
+  display: flex;
+  width: 100%;
+}
+
+.password-input-container input {
+  flex: 1;
+}
+
+.toggle-password-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  font-size: 0.8rem;
+  padding: 2px 5px;
+}
+
+.toggle-password-btn:hover {
+  color: #333;
+}
 
 .error-message {
   color: #ff4d4f;
@@ -1293,7 +1319,7 @@ body {
 .check-availability-btn {
   width: 100%;
   padding: 12px 15px;
-  background-color: #2f855a; /* Green shade to differentiate from submit button */
+  background-color: #2f855a; 
   color: white;
   border: none;
   border-radius: 5px;
@@ -2858,6 +2884,13 @@ body {
 }
 
 /* Analysis card styling */
+.page-title {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+  margin-top: 20px;
+  color: green;
+}
 .analysis-item {
   background: white;
   border-radius: 12px;

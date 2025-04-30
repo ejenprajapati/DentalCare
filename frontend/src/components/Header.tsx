@@ -13,7 +13,7 @@ interface UserProfile {
 function Header() {
   const location = useLocation();
   const navigate = useNavigate();
-  const isLoggedIn = !!localStorage.getItem('access'); // Check if token exists in localStorage
+  const isLoggedIn = !!localStorage.getItem('access'); 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -59,7 +59,7 @@ function Header() {
 
   const handleAuthAction = () => {
     if (isLoggedIn) {
-      localStorage.clear(); // Clear localStorage on logout, as per App.js
+      localStorage.clear(); 
       navigate('/login'); // Redirect to login page
     } else {
       navigate('/login'); // Redirect to login page

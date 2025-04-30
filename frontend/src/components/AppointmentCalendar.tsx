@@ -43,8 +43,8 @@ interface CalendarSettings {
 }
 
 interface AppointmentCalendarProps {
-  patientId?: number | null;  // Optional - to filter appointments for a specific patient
-  readOnly?: boolean;         // Optional - to disable editing/adding appointments
+  patientId?: number | null;  
+  readOnly?: boolean;        
 }
 
 const timeSlots = Array.from({ length: 10 }, (_, i) => 9 + i);
@@ -77,7 +77,7 @@ const getTreatmentType = (detail: string): string => {
   return 'Regular';
 };
 
-// Convert time string to decimal hours (e.g., "09:30" -> 9.5)
+// Convert time string to decimal hours 
 const timeToDecimal = (timeString: string): number => {
   const [hours, minutes] = timeString.split(':').map(Number);
   return hours + minutes / 60;
@@ -120,7 +120,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({ patientId, re
         return;
       }
       
-      // Add patientId to params if provided
+      
       const params: any = {
         start_date: startDateStr,
         end_date: endDateStr,
@@ -147,7 +147,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({ patientId, re
       const positionedAppointments = response.data.map((appt: Appointment) => {
         const apptDate = new Date(appt.date);
         const dayIndex = getDay(apptDate) - 1; // Convert to 0-6 (Mon-Sun), adjust for Monday start
-        const dayIndexAdjusted = dayIndex < 0 ? 6 : dayIndex; // Fix for Sunday
+        const dayIndexAdjusted = dayIndex < 0 ? 6 : dayIndex; 
         
         const startDecimal = timeToDecimal(appt.start_time);
         const endDecimal = timeToDecimal(appt.end_time);
@@ -168,7 +168,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({ patientId, re
       setAppointments(positionedAppointments);
     } catch (error) {
       console.error('Error fetching appointments:', error);
-      // More detailed error logging
+     
       if (axios.isAxiosError(error)) {
         console.error('API Error:', error.response?.data);
         console.error('Status:', error.response?.status);

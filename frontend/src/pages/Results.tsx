@@ -70,8 +70,7 @@ const Results: React.FC = () => {
     };
   }
   
-  // The images should already be properly formatted URLs from AnalysisHistory
-  // so we don't need to modify them here
+
   const originalImgSrc = results.originalImage;
   const analyzedImgSrc = results.analyzedImage;
   
@@ -80,9 +79,7 @@ const Results: React.FC = () => {
       <h1 className="page-title">Analysis Results</h1>
       
       <div className="results-layout">
-        {/* <div className="image-type-indicator">
-          {results.imageType === 'xray' ? 'X-Ray Image Analysis' : 'Normal Dental Image Analysis'}
-        </div> */}
+      
         
         <div className="images-section">
           <div className="image-box">

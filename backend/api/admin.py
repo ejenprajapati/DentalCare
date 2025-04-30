@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from .models import (
     User, Dentist, Patient, DentalImage, Disease, 
     ImageAnalysis, ImageClassification, Appointment, 
-    Treatment, WorkSchedule, Blog, Comment
+    Treatment, WorkSchedule
 )
 
 
@@ -97,13 +97,19 @@ class ImageClassificationInline(admin.TabularInline):
 @admin.register(ImageAnalysis)
 class ImageAnalysisAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'original_image', 'analyzed_image_url', 
-                   'total_conditions', 'created_at')
+                   'image_type','created_at','total_conditions', 'calculus_count', 'caries_count', 
+                       'gingivitis_count', 'hypodontia_count', 'tooth_discolation_count', 
+                       'ulcer_count','calculus_count', 'caries_count', 'gingivitis_count',
+            'hypodontia_count', 'tooth_discolation_count', 'ulcer_count',
+            'cavity_count', 'fillings_count', 'impacted_tooth_count', 'implant_count',  )
     list_filter = ('created_at',)
     search_fields = ('user__username', 'user__email')
     inlines = [ImageClassificationInline]
     readonly_fields = ('total_conditions', 'calculus_count', 'caries_count', 
                        'gingivitis_count', 'hypodontia_count', 'tooth_discolation_count', 
-                       'ulcer_count')
+                       'ulcer_count','calculus_count', 'caries_count', 'gingivitis_count',
+            'hypodontia_count', 'tooth_discolation_count', 'ulcer_count',
+            'cavity_count', 'fillings_count', 'impacted_tooth_count', 'implant_count')
 
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):
@@ -123,14 +129,5 @@ class WorkScheduleAdmin(admin.ModelAdmin):
     list_filter = ['day']
     search_fields = ['dentist__user__first_name', 'dentist__user__last_name', 'day']
 
-@admin.register(Blog)
-class BlogAdmin(admin.ModelAdmin):
-    list_display = ('title', 'dentist', 'created_at')
-    list_filter = ('created_at',)
-    search_fields = ('title', 'content', 'dentist__user__username')
 
-@admin.register(Comment)
-class CommentAdmin(admin.ModelAdmin):
-    list_display = ('blog', 'user', 'created_at')
-    list_filter = ('created_at',)
-    search_fields = ('text', 'user__username', 'blog__title')
+

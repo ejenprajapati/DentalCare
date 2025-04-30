@@ -51,7 +51,7 @@ class User(AbstractUser):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='patient')
     gender = models.CharField(max_length=20, choices=GENDER_CHOICES, blank=True, null=True)
     
-    # Fix the related_name conflicts
+    
     groups = models.ManyToManyField(
         Group,
         related_name='custom_user_groups',
@@ -81,15 +81,15 @@ class User(AbstractUser):
             else:
                 self.role = 'patient'
         if self.profile_picture and (self.profile_picture_url == "none" or self.profile_picture_url == "pending"):
-            # Need to save first to get the URL
+            
             super().save(*args, **kwargs)
             self.profile_picture_url = self.profile_picture.url
-            # Save again to update the URL
+           
             return super().save(update_fields=['profile_picture_url'])
         super().save(*args, **kwargs)
         
         
-        # Automatically create related Dentist or Patient record
+        
         if is_new:
             if self.role == 'dentist' and not hasattr(self, 'dentist'):
                 Dentist.objects.create(user=self)
@@ -98,10 +98,10 @@ class User(AbstractUser):
 
     def delete(self, *args, **kwargs):
         with transaction.atomic():
-            # Only clear many-to-many relationships (not cascaded by default)
+            
             self.groups.clear()
             self.user_permissions.clear()
-            # Let CASCADE handle everything else
+            
             super().delete(*args, **kwargs)
 
 
@@ -125,15 +125,6 @@ class Patient(models.Model):
         return f"{self.user.username} - Patient"
 
 
-# class DentalImage(models.Model):
-#     image = models.ImageField(upload_to='dental_images/')
-#     image_type = models.CharField(max_length=10, default="dental")
-#     uploaded_at = models.DateTimeField(auto_now_add=True)
-    
-#     def __str__(self):
-#         return f"Dental Image {self.id} - {self.image_type}"
-
-
 class Disease(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True, null=True)
@@ -142,23 +133,9 @@ class Disease(models.Model):
         return self.name
 
 
-# class ImageAnalysis(models.Model):
-#     user = models.ForeignKey('User', on_delete=models.CASCADE)
-#     original_image = models.ForeignKey(DentalImage, on_delete=models.CASCADE)
-#     analyzed_image_url = models.CharField(max_length=255, default= "none")
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     diseases = models.ManyToManyField(Disease, through='ImageClassification')
-    
-#     def __str__(self):
-#         return f"Analysis {self.id} for {self.user.username}"
-    
-#     class Meta:
-#         verbose_name_plural = "Image Analyses"
-
-
 class DentalImage(models.Model):
     image = models.ImageField(upload_to='dental_images/')
-    image_url = models.CharField(max_length=255, default="none")  # Add URL field instead of image_type
+    image_url = models.CharField(max_length=255, default="none")  
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
@@ -172,7 +149,7 @@ class ImageAnalysis(models.Model):
     image_type = models.CharField(max_length=10, choices=[('normal', 'Normal'), ('xray', 'X-ray')], default='normal')
     diseases = models.ManyToManyField(Disease, through='ImageClassification')
     
-    # New fields for disease counts
+    
     total_conditions = models.IntegerField(default=0)
     calculus_count = models.IntegerField(default=0)
     caries_count = models.IntegerField(default=0)
@@ -277,21 +254,3 @@ class WorkSchedule(models.Model):
         return f"{self.dentist.user.get_full_name()} - {self.day} ({self.start_hour}:00 - {self.end_hour}:00)"
 
 
-class Blog(models.Model):
-    title = models.CharField(max_length=100)
-    content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    dentist = models.ForeignKey(Dentist, on_delete=models.CASCADE, null=True, blank=True)
-    
-    def __str__(self):
-        return self.title
-
-
-class Comment(models.Model):
-    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='comments')
-    user = models.ForeignKey('User', on_delete=models.CASCADE)
-    text = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return f"Comment by {self.user.username} on {self.blog.title}"

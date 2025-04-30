@@ -5,7 +5,7 @@ import appointmentService from '../services/appointmentService';
 // Import the Appointment interface from the service
 import { Appointment } from '../services/appointmentService';
 
-// Define Dentist interface if needed
+
 interface Dentist {
   user: {
     first_name: string;
@@ -75,12 +75,7 @@ const MyAppointments: React.FC = () => {
     <div className="appointments-container">
       <h1 className="appointments-title">My Appointments</h1>
       
-      {/* <div className="appointments-actions">
-        <button className="btn-primary">Schedule New Appointment</button>
-        <div className="search-container">
-          <input type="text" placeholder="Search..." />
-        </div>
-      </div> */}
+     
       
       <div className="table-container">
         <table className="appointments-table">

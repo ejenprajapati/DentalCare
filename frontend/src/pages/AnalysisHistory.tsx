@@ -19,12 +19,19 @@ interface Analysis {
   created_at: string;
   diseases: Disease[];
   total_conditions: number;
+  image_type: 'normal' | 'xray';
+  // Normal dental image counts
   calculus_count: number;
   caries_count: number;
   gingivitis_count: number;
   hypodontia_count: number;
   tooth_discolation_count: number;
   ulcer_count: number;
+  // X-ray image counts
+  cavity_count: number;
+  fillings_count: number;
+  impacted_tooth_count: number;
+  implant_count: number;
 }
 
 const AnalysisHistory: React.FC = () => {
@@ -62,8 +69,8 @@ const AnalysisHistory: React.FC = () => {
     fetchAnalysisHistory();
   }, [navigate]);
 
-  // Inside the viewAnalysisDetails function in AnalysisHistory.tsx
-const viewAnalysisDetails = (analysis: Analysis) => {
+  // Function to view analysis details and navigate to results page
+  const viewAnalysisDetails = (analysis: Analysis) => {
     try {
       console.log('Viewing analysis details for:', analysis.id);
       
@@ -72,12 +79,19 @@ const viewAnalysisDetails = (analysis: Analysis) => {
         originalImage: getImageUrl(analysis.original_image?.image_url || analysis.original_image?.image),
         analyzedImage: getImageUrl(analysis.analyzed_image_url),
         totalConditionsDetected: analysis.total_conditions,
+        imageType: analysis.image_type,
+        // Include all counts regardless of image type
         calculusCount: analysis.calculus_count,
         cariesCount: analysis.caries_count,
         gingivitisCount: analysis.gingivitis_count,
         hypodontiaCount: analysis.hypodontia_count,
         toothDiscolationCount: analysis.tooth_discolation_count,
         ulcerCount: analysis.ulcer_count,
+        // X-ray specific counts
+        cavityCount: analysis.cavity_count,
+        fillingsCount: analysis.fillings_count,
+        impactedToothCount: analysis.impacted_tooth_count,
+        implantCount: analysis.implant_count,
         analysisId: analysis.id
       };
       
@@ -141,6 +155,7 @@ const viewAnalysisDetails = (analysis: Analysis) => {
                 <h3>Analysis #{analysis.id}</h3>
                 <p>Date: {new Date(analysis.created_at).toLocaleString()}</p>
                 <p>Conditions detected: {analysis.total_conditions}</p>
+                <p>Type: {analysis.image_type === 'xray' ? 'X-Ray Image' : 'Normal Dental Image'}</p>
                 <button 
                   className="btn view-btn"
                   onClick={() => viewAnalysisDetails(analysis)}

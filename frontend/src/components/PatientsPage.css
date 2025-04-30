@@ -30,11 +30,13 @@
     align-items: center;
     gap: 1rem; /* Spacing between search and sort */
     margin-bottom: 1.5rem;
+    margin: 10px 0px 20px 300px;
 }
 
 .search-container {
     width: 100%;
     max-width: 300px;
+    
 }
 
 .search-input {
@@ -44,6 +46,7 @@
     border-radius: 4px;
     font-size: 0.9rem;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    
 }
 
 /* Sort controls */

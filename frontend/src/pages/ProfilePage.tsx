@@ -20,6 +20,10 @@ const UserProfile: React.FC = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  // Add states for password visibility
+  const [showCurrentPassword, setShowCurrentPassword] = useState<boolean>(false);
+  const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   
   const navigate = useNavigate();
   const API_BASE_URL = 'http://127.0.0.1:8000';
@@ -351,40 +355,67 @@ const UserProfile: React.FC = () => {
             <form onSubmit={handlePasswordSubmit}>
               <div className="form-group">
                 <label htmlFor="current_password">Current Password</label>
-                <input
-                  id="current_password"
-                  name="current_password"
-                  type="password"
-                  value={passwordData.current_password}
-                  onChange={handlePasswordChange}
-                  required
-                />
+                <div className="password-input-container">
+                  <input
+                    id="current_password"
+                    name="current_password"
+                    type={showCurrentPassword ? "text" : "password"}
+                    value={passwordData.current_password}
+                    onChange={handlePasswordChange}
+                    required
+                  />
+                  <button 
+                    type="button" 
+                    className="toggle-password-btn"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  >
+                    {showCurrentPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
               </div>
               
               <div className="form-group">
                 <label htmlFor="new_password">New Password</label>
-                <input
-                  id="new_password"
-                  name="new_password"
-                  type="password"
-                  value={passwordData.new_password}
-                  onChange={handlePasswordChange}
-                  required
-                  minLength={8}
-                />
+                <div className="password-input-container">
+                  <input
+                    id="new_password"
+                    name="new_password"
+                    type={showNewPassword ? "text" : "password"}
+                    value={passwordData.new_password}
+                    onChange={handlePasswordChange}
+                    required
+                    minLength={8}
+                  />
+                  <button 
+                    type="button" 
+                    className="toggle-password-btn"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                  >
+                    {showNewPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
               </div>
               
               <div className="form-group">
                 <label htmlFor="confirm_password">Confirm New Password</label>
-                <input
-                  id="confirm_password"
-                  name="confirm_password"
-                  type="password"
-                  value={passwordData.confirm_password}
-                  onChange={handlePasswordChange}
-                  required
-                  minLength={8}
-                />
+                <div className="password-input-container">
+                  <input
+                    id="confirm_password"
+                    name="confirm_password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={passwordData.confirm_password}
+                    onChange={handlePasswordChange}
+                    required
+                    minLength={8}
+                  />
+                  <button 
+                    type="button" 
+                    className="toggle-password-btn"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
               </div>
               
               <div className="form-actions">

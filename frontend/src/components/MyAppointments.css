@@ -2,10 +2,10 @@
 
 /* Main container */
 .appointments-container {
-    padding: 40px; /* Increased from 20px */
-    margin-bottom: 60px; /* Added to create space above footer */
+    padding: 40px; 
+    margin-bottom: 60px; 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    min-height: calc(100vh - 200px); /* Ensure container takes up enough height to push footer down */
+    min-height: calc(100vh - 200px); 
   }
   
   /* Title */
@@ -13,7 +13,7 @@
     color: #2c3e50;
     margin-bottom: 30px;
     font-size: 28px;
-    text-align: center; /* Added to center the title */
+    text-align: center;
   }
   
   /* Actions section */

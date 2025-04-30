@@ -4,7 +4,7 @@ from rest_framework import serializers
 from .models import (
     User, Dentist, Patient, DentalImage, Disease, 
     ImageAnalysis, Appointment, Treatment, 
-    WorkSchedule, Blog, Comment
+    WorkSchedule
 )
 from django.contrib.auth import get_user_model
 
@@ -72,7 +72,7 @@ class DiseaseSerializer(serializers.ModelSerializer):
         model = Disease
         fields = ['id', 'name', 'description']
 
-# Update in serializers.py
+
 class ImageAnalysisSerializer(serializers.ModelSerializer):
     diseases = DiseaseSerializer(many=True, read_only=True)
     original_image = DentalImageSerializer(read_only=True)
@@ -88,9 +88,9 @@ class ImageAnalysisSerializer(serializers.ModelSerializer):
 
 
 # api/serializers.py
-from rest_framework import serializers
-from .models import Appointment, Patient, Dentist, ImageAnalysis
-from .serializers import ImageAnalysisSerializer
+# from rest_framework import serializers
+# from .models import Appointment, Patient, Dentist, ImageAnalysis
+# from .serializers import ImageAnalysisSerializer
 
 class AppointmentSerializer(serializers.ModelSerializer):
     patient = serializers.PrimaryKeyRelatedField(queryset=Patient.objects.all())
@@ -111,7 +111,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
             'id', 'detail', 'date', 'start_time', 'end_time',
             'approved', 'patient', 'dentist', 'created_at',
             'analyzed_image', 'analyzed_image_id', 'treatment',
-            'patient_name', 'dentist_name'  # Ensure these are included
+            'patient_name', 'dentist_name'  
         ]
 
     def get_patient_name(self, obj):
@@ -283,25 +283,5 @@ class WorkScheduleSerializer(serializers.ModelSerializer):
         model = WorkSchedule
         fields = ['id', 'dentist', 'day', 'start_hour', 'end_hour']
 
-class CommentSerializer(serializers.ModelSerializer):
-    username = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = Comment
-        fields = ['id', 'blog', 'user', 'text', 'created_at', 'username']
-        read_only_fields = ['user']
-    
-    def get_username(self, obj):
-        return obj.user.username
 
-class BlogSerializer(serializers.ModelSerializer):
-    comments = CommentSerializer(many=True, read_only=True)
-    dentist_name = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = Blog
-        fields = ['id', 'title', 'content', 'created_at', 'dentist', 'comments', 'dentist_name']
-        read_only_fields = ['dentist']
-    
-    def get_dentist_name(self, obj):
-        return f"{obj.dentist.user.first_name} {obj.dentist.user.last_name}"
+

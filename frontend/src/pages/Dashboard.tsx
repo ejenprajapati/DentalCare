@@ -308,16 +308,7 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className="stat-change positive">↑</div>
               </div>
-              {/* <div className="patient-stat-item">
-                <div className="patient-icon">
-                  <i className="fas fa-user-friends"></i>
-                </div>
-                <div className="patient-stat-details">
-                  <h4>{returningPatients || '0'}</h4>
-                  <p>Returning Patients</p>
-                </div>
-                <div className="stat-change positive">↑ 15%</div>
-              </div> */}
+             
             </div>
           </div>
 
